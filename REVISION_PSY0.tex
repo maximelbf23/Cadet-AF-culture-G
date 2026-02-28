@@ -1,0 +1,817 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=1.8cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{amssymb}
+
+% Couleurs
+\definecolor{afblue}{RGB}{0,48,135}
+\definecolor{afred}{RGB}{200,16,46}
+\definecolor{aflight}{RGB}{220,230,245}
+\definecolor{memoyellow}{RGB}{255,250,220}
+\definecolor{warnred}{RGB}{255,235,235}
+\definecolor{okgreen}{RGB}{230,250,230}
+
+% Style titres
+\titleformat{\section}{\LARGE\bfseries\color{afblue}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\Large\bfseries\color{afblue!80}}{}{0em}{}
+\titleformat{\subsubsection}{\large\bfseries\color{afblue!60}}{}{0em}{}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{afblue}\textbf{PSY0 --- Cadets Air France}}
+\fancyhead[R]{\small\color{afblue}Édition 2025/2026}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{afblue}\leaders\hrule height \headrulewidth\hfill}}
+
+% Boîtes
+\newtcolorbox{memobox}[1][]{colback=memoyellow,colframe=orange!70,title=\textbf{MÉMO},fonttitle=\bfseries,#1}
+\newtcolorbox{warnbox}[1][]{colback=warnred,colframe=red!70,title=\textbf{ATTENTION},fonttitle=\bfseries,#1}
+\newtcolorbox{tipbox}[1][]{colback=okgreen,colframe=green!50!black,title=\textbf{ASTUCE},fonttitle=\bfseries,#1}
+
+\hypersetup{colorlinks=true,linkcolor=afblue,urlcolor=afblue}
+
+\begin{document}
+
+% PAGE DE TITRE
+\begin{titlepage}
+\begin{center}
+\vspace*{2cm}
+{\Huge\bfseries\color{afblue} GUIDE DE RÉVISION\\[0.3cm] ULTRA-COMPLET}\\[1cm]
+{\LARGE\color{afred}\bfseries PSY0 --- CADETS AIR FRANCE}\\[0.8cm]
+{\Large Culture Aéronautique --- Édition 2025/2026}\\[2cm]
+\rule{\textwidth}{2pt}\\[0.5cm]
+{\large Ce document compile l'intégralité des connaissances nécessaires pour réussir l'épreuve de culture aéronautique du PSY0.\\[0.3cm]
+Basé sur les annales 2018, 2019, 2020, les fiches de préparation officielles et des recherches complémentaires actualisées.}\\[0.5cm]
+\rule{\textwidth}{2pt}\\[2cm]
+{\Large\textbf{15 Parties $\bullet$ 100 QCM $\bullet$ Fiches Mémo}}\\[3cm]
+{\large\color{gray} Bonne chance pour ta sélection, futur(e) pilote !}
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+%=============================================================
+\section{HISTOIRE DE L'AVIATION}
+%=============================================================
+
+\subsection{Les Pionniers (avant 1914)}
+
+\begin{longtable}{p{1cm}p{3.5cm}p{4cm}p{6cm}}
+\toprule
+\textbf{Année} & \textbf{Qui} & \textbf{Exploit} & \textbf{Détail à retenir} \\
+\midrule
+\endfirsthead
+\toprule \textbf{Année} & \textbf{Qui} & \textbf{Exploit} & \textbf{Détail} \\ \midrule
+\endhead
+1783 & Frères Montgolfier & Premier vol en ballon & Ballon à air chaud, Annonay (Ardèche) \\
+1783 & Jacques Charles & Ballon à gaz (hydrogène) & Tuileries, Paris \\
+1852 & Henri Giffard & Dirigeable motorisé & Machine à vapeur \\
+\rowcolor{aflight}
+1890 & \textbf{Clément Ader} & \textbf{Premier décollage motorisé (Éole)} & $\sim$50m, non contrôlé. <<~Père de l'aviation~>> en France. Invente le mot <<~avion~>> \\
+1891 & Otto Lilienthal & Vols planés répétés & Allemand, $\sim$2000 vols planés \\
+\rowcolor{aflight}
+1903 & \textbf{Frères Wright} & \textbf{Premier vol motorisé contrôlé} & Kitty Hawk (USA), 12s, 36m, \textit{Wright Flyer} \\
+1906 & Santos-Dumont & Vol du 14-bis à Bagatelle & Premier vol homologué en Europe \\
+\rowcolor{aflight}
+1909 & \textbf{Louis Blériot} & \textbf{Traversée de la Manche} & Blériot XI, 25 juillet, 37 min \\
+1910 & Henri Fabre & Premier vol en hydravion & Étang de Berre (Marseille) \\
+1910 & Élisa Deroche & Première femme brevetée pilote & Brevet n°36 (monde entier) \\
+1911 & Raoul Badin & Invente l'anémomètre & Tube de Badin --- mesure vitesse air \\
+\rowcolor{aflight}
+1913 & \textbf{Roland Garros} & \textbf{Traversée de la Méditerranée} & Fréjus $\to$ Bizerte (Tunisie), 8h \\
+1913 & Adolphe Pégoud & Premier looping en avion & Français \\
+\bottomrule
+\end{longtable}
+
+\subsection{Grande Guerre et Entre-deux-guerres (1914--1939)}
+
+\begin{longtable}{p{1cm}p{4cm}p{9.5cm}}
+\toprule
+\textbf{Année} & \textbf{Événement} & \textbf{Détails} \\
+\midrule
+1914-18 & WWI & Reconnaissance $\to$ chasse $\to$ bombardement. As~: Guynemer (54 vict.), Fonck (75 vict., top as allié), Richthofen <<~Baron Rouge~>> (80 vict.) \\
+1919 & Création de KLM & Plus ancienne compagnie encore en activité \\
+1921 & Adrienne Bolland & \textbf{Première femme à traverser les Andes} (Caudron G.3) \\
+\rowcolor{aflight}
+1927 & \textbf{Charles Lindbergh} & \textbf{Première traversée solo Atlantique Nord sans escale}. NY $\to$ Paris (Le Bourget), \textit{Spirit of St. Louis}, 33h30 \\
+1927 & Nungesser et Coli & Tentative Paris $\to$ NY, disparus. Avion~: <<~L'Oiseau Blanc~>> \\
+1930 & Jean Mermoz & Première traversée postale Atlantique Sud (Latécoère 28) \\
+\rowcolor{aflight}
+\textbf{1933} & \textbf{Création d'AIR FRANCE} & Fusion de \textbf{5 compagnies}~: Air Orient, Air Union, CIDNA, Lignes Farman (SGTA), Aéropostale \\
+1936 & Disparition de Mermoz & Latécoère 300 <<~Croix du Sud~>>, Atlantique Sud \\
+\bottomrule
+\end{longtable}
+
+\subsection{WWII et Âge du Jet (1939--1970)}
+
+\begin{longtable}{p{1cm}p{4cm}p{9.5cm}}
+\toprule
+\textbf{Année} & \textbf{Événement} & \textbf{Détails} \\
+\midrule
+1939-45 & WWII & Bond techno~: radar, réacteur, pressurisation. Spitfire, P-51 Mustang, Messerschmitt Bf 109 \\
+1939 & Premier vol à réaction & Heinkel He 178 (turboréacteur Von Ohain) \\
+\rowcolor{aflight}
+1944 & \textbf{Convention de Chicago} & Création de l'\textbf{OACI} \\
+\rowcolor{aflight}
+1947 & \textbf{Chuck Yeager} & \textbf{Premier vol supersonique} --- Bell X-1, Mach 1.06 \\
+1949 & De Havilland Comet & Premier avion de ligne à réaction \\
+1955 & Caravelle --- premier vol & Premier biréacteur commercial de série, moteurs arrière \\
+\rowcolor{aflight}
+1969 & \textbf{Concorde} --- premier vol & 2 mars 1969, Toulouse, franco-britannique \\
+1969 & Boeing 747 --- premier vol & <<~Jumbo Jet~>>, premier gros porteur \\
+\rowcolor{aflight}
+1970 & \textbf{Création d'Airbus} & 18 décembre, consortium européen \\
+\bottomrule
+\end{longtable}
+
+\subsection{Ère Moderne (1970--aujourd'hui)}
+
+\begin{longtable}{p{1cm}p{4cm}p{9.5cm}}
+\toprule
+\textbf{Année} & \textbf{Événement} & \textbf{Détails} \\
+\midrule
+1976 & Concorde en service AF+BA & Paris-NY 3h30, Mach 2.02, plafond 18\,000m \\
+1988 & A320 en service chez AF & Premier avion \textbf{fly-by-wire} civil Airbus \\
+\rowcolor{aflight}
+1996 & \textbf{Hub CDG} inauguré & Sous Christian Blanc \\
+\rowcolor{aflight}
+2000 & Alliance \textbf{SkyTeam} fondée & AF, Delta, AeroMéxico, Korean Air \\
+2003 & Arrêt du Concorde & Dernier vol~: 26 novembre 2003 \\
+\rowcolor{aflight}
+2004 & Groupe \textbf{Air France-KLM} & Fusion \\
+2005 & Privatisation d'AF & + Lancement Flying Blue \\
+2006 & Création Transavia France & Filiale low-cost \\
+\rowcolor{aflight}
+2019 & \textbf{A350-900 chez AF} & Remplace A340/A330/B777-200 \\
+\rowcolor{aflight}
+2020 & \textbf{Retrait A380} flotte AF & Covid accélère la décision \\
+\bottomrule
+\end{longtable}
+
+\begin{memobox}
+\textbf{Séquence chronologique}~: 1890 Ader $\to$ 1903 Wright $\to$ 1909 Blériot $\to$ 1927 Lindbergh $\to$ \textbf{1933 Air France} $\to$ 1947 Mur du son $\to$ 1969 Concorde $\to$ 1996 Hub CDG $\to$ 2000 SkyTeam $\to$ 2004 AF-KLM $\to$ 2019 A350 AF
+\end{memobox}
+
+%=============================================================
+\section{AIR FRANCE --- IDENTITÉ, GOUVERNANCE, STRATÉGIE}
+%=============================================================
+
+\subsection{Fiche d'Identité}
+
+\begin{tabular}{p{4.5cm}p{10cm}}
+\toprule
+Date de création & \textbf{7 octobre 1933} \\
+Fusion de & Air Orient, Air Union, CIDNA, Lignes Farman (SGTA), Aéropostale \\
+Nationalisation / Privatisation & 1945 / 2005 \\
+Siège social & Tremblay-en-France (Roissy-CDG) \\
+Code OACI / IATA & AFR / AF \\
+Emblème & \textbf{Hippocampe ailé} (<<~la crevette~>>), hérité d'Air Orient \\
+Slogan actuel (2022) & <<~S'envoler en toute élégance~>> \\
+Alliance & SkyTeam (membre fondateur) \\
+Programme fidélité & Flying Blue \\
+\bottomrule
+\end{tabular}
+
+\subsection{Slogans Historiques}
+\begin{itemize}[nosep]
+\item 1980~: <<~Gagner le c\oe ur du monde~>>
+\item 1999~: <<~Faire du ciel le plus bel endroit de la terre~>>
+\item 2014--2022~: <<~\textbf{France is in the Air}~>> (agence BETC)
+\item Depuis 2022~: <<~\textbf{S'envoler en toute élégance}~>>
+\end{itemize}
+
+\subsection{Dirigeants Clés}
+
+\begin{tabular}{p{4cm}p{2.5cm}p{8cm}}
+\toprule
+\textbf{Nom} & \textbf{Période} & \textbf{Faits marquants} \\
+\midrule
+Ernest Roume & 1933--1935 & Premier président d'AF \\
+Christian Blanc & 1993--1997 & Création du Hub CDG (1996) \\
+Jean-Cyril Spinetta & 1997--2009 & SkyTeam, fusion KLM, privatisation, Flying Blue \\
+\rowcolor{aflight}
+\textbf{Benjamin Smith} & \textbf{Depuis 2018} & \textbf{DG Groupe AF-KLM} \\
+\rowcolor{aflight}
+\textbf{Anne Rigail} & \textbf{Depuis 2018} & \textbf{DG Air France} (première femme au poste) \\
+Anne-Marie Couderc & Actuelle & Présidente du CA (non exécutif) \\
+\bottomrule
+\end{tabular}
+
+\subsection{Filiales et Chiffres Clés}
+
+\begin{multicols}{2}
+\textbf{Filiales~:}
+\begin{itemize}[nosep]
+\item Air France (long + moyen courrier)
+\item KLM (Pays-Bas, hub Amsterdam)
+\item Transavia France (low-cost, hub Orly)
+\item Air France HOP (régional)
+\end{itemize}
+\columnbreak
+\textbf{Chiffres~:}
+\begin{itemize}[nosep]
+\item Flotte AF~: $\sim$\textbf{228 avions}
+\item Destinations~: $\sim$200 dans $\sim$90 pays
+\item Passagers/an AF~: $\sim$50 millions
+\item Employés AF~: $\sim$43\,000
+\end{itemize}
+\end{multicols}
+
+%=============================================================
+\section{FLOTTE DÉTAILLÉE}
+%=============================================================
+
+\subsection{Flotte Long-Courrier}
+
+\begin{tabular}{p{3cm}p{1.5cm}p{3cm}p{1.5cm}p{1.5cm}p{1.5cm}p{1.5cm}}
+\toprule
+\textbf{Avion} & \textbf{Nb} & \textbf{Moteur} & \textbf{Pax} & \textbf{Auton.} & \textbf{Mach} & \textbf{MTOW} \\
+\midrule
+\rowcolor{aflight}
+\textbf{A350-900} & $\sim$40 & 2$\times$ Trent XWB (RR) & 324 & 15\,000 km & 0.85 & 280t \\
+\textbf{B777-300ER} & $\sim$43 & 2$\times$ GE90-115B & 468 & 13\,650 km & 0.84 & 351t \\
+B777-200ER & $\sim$18 & 2$\times$ GE90-94B & 280 & 14\,300 km & 0.84 & 298t \\
+\bottomrule
+\end{tabular}
+
+\begin{tipbox}
+Le \textbf{GE90-115B} du B777-300ER est le \textbf{moteur le plus puissant au monde}~: 115\,000 lb de poussée.
+\end{tipbox}
+
+\subsection{Flotte Moyen-Courrier}
+
+\begin{tabular}{p{3cm}p{1.5cm}p{3cm}p{1.5cm}p{1.5cm}p{1.5cm}p{1.5cm}}
+\toprule
+\textbf{Avion} & \textbf{Nb} & \textbf{Moteur} & \textbf{Pax} & \textbf{Auton.} & \textbf{Mach} & \textbf{MTOW} \\
+\midrule
+\rowcolor{aflight}
+\textbf{A220-300} & $\sim$50 & 2$\times$ PW1500G (P\&W) & 148 & 6\,300 km & 0.82 & 70.9t \\
+A320 & actif & 2$\times$ CFM56-5 & 150 & 6\,150 km & 0.78 & 78t \\
+A321 & actif & 2$\times$ CFM56-5 & 185 & 5\,950 km & 0.78 & 93.5t \\
+\bottomrule
+\end{tabular}
+
+\subsection{Transavia France}
+B737-800 ($\sim$33, 2$\times$ CFM56-7B, 189 pax) + A320neo en livraison (2$\times$ LEAP-1A).
+
+\subsection{Avions Historiques}
+
+\begin{tabular}{p{3cm}p{2cm}p{9.5cm}}
+\toprule
+\textbf{Avion} & \textbf{Dates AF} & \textbf{Caractéristiques} \\
+\midrule
+\textbf{Concorde} & 1976--2003 & \textbf{Mach 2.02}, plafond 18\,300m, 100 pax, 4$\times$ Olympus 593 \\
+\textbf{A380} & 2009--2020 & 516 pax AF, 4$\times$ GP7200, double pont intégral \\
+Caravelle & 1959--1981 & Premier biréacteur commercial série, moteurs arrière \\
+Boeing 747 & 1970--2016 & <<~Jumbo Jet~>>, 4 moteurs, $\sim$400 pax \\
+A340 & 1993--2020 & \textbf{4$\times$ CFM56}, quadriréacteur \\
+\bottomrule
+\end{tabular}
+
+\subsection{Moteurs par Avion (question très fréquente)}
+
+\begin{memobox}
+\textbf{CFM International} = joint-venture \textbf{GE (USA) + Safran (France)}. Produit le CFM56 ($>$35\,000 ex.) et le LEAP.\\
+\textbf{GE90} $\to$ B777 \quad|\quad \textbf{Trent XWB} $\to$ A350 \quad|\quad \textbf{CFM56} $\to$ A320/A340/B737 \quad|\quad \textbf{PW1500G} $\to$ A220
+\end{memobox}
+
+%=============================================================
+\section{PRINCIPES DE VOL \& AÉRODYNAMIQUE}
+%=============================================================
+
+\subsection{Les 4 Forces}
+En vol stabilisé en palier~: Portance = Poids \textbf{ET} Poussée = Traînée.
+
+\begin{itemize}[nosep]
+\item \textbf{Portance}~: Différence de pression extrados/intrados. Dépend de $V^2$, surface alaire, $C_z$, $\rho$.
+\item \textbf{Poids}~: $m \times g$ ($g = 9{,}81$ m/s$^2$).
+\item \textbf{Poussée}~: Force motrice (réacteurs/hélices).
+\item \textbf{Traînée}~: Résistance aéro = traînée de forme + induite + frottement.
+\end{itemize}
+
+\subsection{Les 3 Axes et Gouvernes}
+
+\begin{tabular}{p{2.5cm}p{2.5cm}p{2.5cm}p{3cm}p{3.5cm}}
+\toprule
+\textbf{Axe} & \textbf{Mouvement} & \textbf{Commande} & \textbf{Gouverne} & \textbf{Mnémo} \\
+\midrule
+Longitudinal & \textbf{Roulis} & Manche latéral & \textbf{Ailerons} & Roulis = Roll = Ailerons \\
+Latéral & \textbf{Tangage} & Manche avant/arr. & \textbf{Profondeur} & Tangage = Pitch = Profondeur \\
+Vertical & \textbf{Lacet} & Palonnier (pédales) & \textbf{Direction} & Lacet = Yaw = Direction \\
+\bottomrule
+\end{tabular}
+
+\subsection{Relation Fondamentale}
+$$\boxed{\text{ASSIETTE} = \text{PENTE} + \text{INCIDENCE}}$$
+
+\subsection{Le Décrochage (Stall)}
+
+\begin{warnbox}
+Le décrochage se produit \textbf{toujours à la même incidence critique} ($\sim$15--18°), \textbf{indépendamment} de la vitesse, du poids ou de l'altitude. Par contre, la \textbf{vitesse} de décrochage varie avec le poids, le facteur de charge et la configuration des volets.
+\end{warnbox}
+
+\subsection{Dispositifs Hypersustentateurs}
+
+\begin{tabular}{p{3cm}p{2.5cm}p{3cm}p{5.5cm}}
+\toprule
+\textbf{Dispositif} & \textbf{Position} & \textbf{Rôle} & \textbf{Détails} \\
+\midrule
+\textbf{Volets} (flaps) & Bord de fuite & $\uparrow$ portance, $\uparrow$ traînée & Décollage $\sim$10--15°, atterrissage $\sim$30--40° \\
+\textbf{Becs} (slats) & Bord d'attaque & $\uparrow$ incidence max & Retardent le décrochage \\
+\textbf{Spoilers} & Extrados & $\downarrow$ portance, $\uparrow$ traînée & Descente + freinage \\
+\textbf{Reverses} & Nacelles moteurs & Inversent la poussée & Uniquement après toucher des roues \\
+\bottomrule
+\end{tabular}
+
+%=============================================================
+\section{MOTEURS \& PROPULSION}
+%=============================================================
+
+\subsection{Fonctionnement du Turboréacteur (Turbofan)}
+
+\begin{center}
+\fbox{\textbf{Fan $\to$ Compresseur $\to$ Chambre de Combustion $\to$ Turbine $\to$ Tuyère}}
+\end{center}
+
+\begin{memobox}
+\textbf{Mnémo}~: \textbf{C}ompresseur $\to$ \textbf{C}ombustion $\to$ \textbf{T}urbine $\to$ \textbf{T}uyère\\
+\textbf{Taux de dilution}~: CFM56 $\sim$6 | LEAP $\sim$11 | Militaire $\sim$0.5. Plus élevé = plus silencieux et économique.
+\end{memobox}
+
+\subsection{Types de Moteurs}
+
+\begin{tabular}{p{3.5cm}p{5cm}p{2.5cm}p{3cm}}
+\toprule
+\textbf{Type} & \textbf{Principe} & \textbf{Vitesse opt.} & \textbf{Exemples} \\
+\midrule
+Turbofan (double flux) & Fan + compresseur + combustion & M 0.7--0.9 & CFM56, GE90, LEAP \\
+Turbopropulseur & Turbine $\to$ hélice via réducteur & $<$ 600 km/h & PW100 (ATR) \\
+Turboréacteur pur & Tout en flux primaire & $>$ Mach 1 & Olympus 593 \\
+Moteur à pistons & Combustion interne + hélice & $<$ 400 km/h & Lycoming, Continental \\
+\bottomrule
+\end{tabular}
+
+%=============================================================
+\section{INSTRUMENTS DE BORD}
+%=============================================================
+
+\subsection{Les Six Instruments de Base}
+
+\begin{tabular}{p{3cm}p{3cm}p{4cm}p{4.5cm}}
+\toprule
+\textbf{Instrument} & \textbf{Mesure} & \textbf{Source} & \textbf{Mnémo} \\
+\midrule
+Anémomètre (Badin) & Vitesse (IAS) & Pitot $-$ Statique & -- \\
+Horizon artificiel & Assiette & Gyroscope / AHRS & Bleu=ciel, Marron=terre \\
+Altimètre & Altitude & Pression statique & QNH=Alt, QFE=Haut, 1013=FL \\
+Variomètre & Vit. verticale & Variation pression stat. & ft/min, + = montée \\
+Conservateur de cap & Cap & Gyroscope directionnel & -- \\
+Bille-aiguille & Virage + symétrie & Gyro + pendule & Bille au centre \\
+\bottomrule
+\end{tabular}
+
+\subsection{Pannes --- Effets (question très fréquente)}
+
+\begin{warnbox}[title=\textbf{Si la prise STATIQUE est bouchée}]
+\textbf{Altimètre}~: bloqué à la dernière altitude.
+\textbf{Variomètre}~: bloqué à zéro.
+\textbf{Badin}~: sous-estime en montée, surestime en descente.
+\end{warnbox}
+
+\begin{warnbox}[title=\textbf{Si le tube PITOT est bouché}]
+\textbf{Badin}~: indications erronées (se comporte comme un altimètre). Altimètre et variomètre restent OK.
+\end{warnbox}
+
+\subsection{Systèmes de Sécurité}
+\begin{itemize}[nosep]
+\item \textbf{TCAS}~: anticollision (TA/RA), basé sur transpondeurs
+\item \textbf{GPWS/EGPWS}~: alerte proximité sol (<<~TERRAIN PULL UP~>>)
+\item \textbf{FMS}~: ordinateur navigation/performances
+\item \textbf{ECAM} (Airbus) / \textbf{EICAS} (Boeing)~: affichage pannes
+\item \textbf{CVR}~: boîte noire voix ($\geq$2h) | \textbf{FDR}~: boîte noire données ($\geq$25h)
+\end{itemize}
+
+%=============================================================
+\section{VITESSES AÉRONAUTIQUES}
+%=============================================================
+
+\subsection{Vitesses de Décollage}
+
+\begin{tabular}{p{2cm}p{4cm}p{8.5cm}}
+\toprule
+\textbf{Vitesse} & \textbf{Nom} & \textbf{Définition} \\
+\midrule
+\textbf{V1} & Vitesse de décision & Max pour interrompre le décollage. Au-delà $\to$ on continue \\
+\textbf{VR} & Vitesse de rotation & On tire le manche (VR $\geq$ V1) \\
+\textbf{V2} & Vitesse de sécurité & Min pour monter avec 1 moteur en panne \\
+\bottomrule
+\end{tabular}
+
+\subsection{Types de Vitesses}
+
+\begin{tabular}{p{2cm}p{5cm}p{7.5cm}}
+\toprule
+\textbf{Abrév.} & \textbf{Nom} & \textbf{Explication} \\
+\midrule
+\textbf{IAS} & Indicated Airspeed & Lue sur le Badin. Max 250 kt sous FL100 \\
+\textbf{TAS} & True Airspeed & Vitesse vraie / air. Augmente avec l'altitude (à même IAS) \\
+\textbf{GS} & Ground Speed & TAS $\pm$ vent. Détermine le temps de vol réel \\
+\textbf{Mach} & Nombre de Mach & TAS / vitesse du son locale. Utilisé au-dessus du FL250 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Vitesses Typiques A320}
+
+\begin{tabular}{p{5cm}p{9.5cm}}
+\toprule
+\textbf{Paramètre} & \textbf{Valeur} \\
+\midrule
+V1 / VR / V2 (typ.) & $\sim$145 / $\sim$150 / $\sim$155 kt \\
+\rowcolor{aflight}
+\textbf{Croisière} & \textbf{Mach 0.78} (\textbf{828 km/h}) \\
+MMO / VMO & Mach 0.82 / 350 kt IAS \\
+Altitude croisière & FL350 à FL390 (plafond FL410) \\
+Consommation horaire & $\sim$2\,700 kg/h par moteur ($\sim$5\,400 L/h total) \\
+\bottomrule
+\end{tabular}
+
+\newpage
+%=============================================================
+\section{NAVIGATION AÉRIENNE}
+%=============================================================
+
+\subsection{Systèmes de Navigation}
+
+\begin{tabular}{p{1.8cm}p{2cm}p{1.5cm}p{3cm}p{6cm}}
+\toprule
+\textbf{Système} & \textbf{Bande} & \textbf{Portée} & \textbf{Infos} & \textbf{Particularités} \\
+\midrule
+\textbf{NDB} & MF & $\sim$200 NM & Direction (ADF) & Peu précis, sensible parasites/orages \\
+\textbf{VOR} & VHF & $\sim$200 NM & Radiale (relèvement) & Précis, portée optique \\
+\textbf{DME} & UHF & $\sim$200 NM & Distance oblique (NM) & Souvent couplé au VOR \\
+\textbf{ILS} & VHF+UHF & $\sim$25 NM & Axe piste + pente 3° & Le plus précis pour atterrir \\
+\textbf{GNSS} & Satellite & Mondiale & Position 3D & GPS/Galileo/GLONASS/BeiDou \\
+\textbf{IRS/INS} & Embarqué & Autonome & Position, vitesse & Dérive $\sim$1 NM/h \\
+\bottomrule
+\end{tabular}
+
+\subsection{Catégories ILS}
+
+\begin{tabular}{p{2cm}p{5cm}p{7.5cm}}
+\toprule
+\textbf{Cat.} & \textbf{DH (Decision Height)} & \textbf{RVR (Runway Visual Range)} \\
+\midrule
+Cat I & $\geq$ 200 ft & $\geq$ 550 m \\
+Cat II & $\geq$ 100 ft & $\geq$ 300 m \\
+Cat IIIA & $\geq$ 50 ft & $\geq$ 200 m \\
+Cat IIIB & $<$ 50 ft & $\geq$ 75 m \\
+Cat IIIC & Aucun minimum & Aucun minimum \\
+\bottomrule
+\end{tabular}
+
+\subsection{Espaces Aériens en France}
+
+\begin{tabular}{p{1.5cm}p{2cm}p{1cm}p{1cm}p{3.5cm}p{2cm}p{2cm}}
+\toprule
+\textbf{Classe} & \textbf{Type} & \textbf{IFR} & \textbf{VFR} & \textbf{Séparation} & \textbf{Radio} & \textbf{Clair.} \\
+\midrule
+A & Contrôlé & Oui & Non & IFR/IFR & Oblig. & Oblig. \\
+B & --- & \multicolumn{5}{c}{\textit{Non utilisé en France}} \\
+C & Contrôlé & Oui & Oui & IFR/IFR + IFR/VFR & Oblig. & Oblig. \\
+D & Contrôlé & Oui & Oui & IFR/IFR seulement & Oblig. & Oblig. \\
+E & Contrôlé & Oui & Oui & IFR/IFR & IFR: oui & IFR seul \\
+F & --- & \multicolumn{5}{c}{\textit{Non utilisé en France}} \\
+G & Non contrôlé & Oui & Oui & Aucune & Non oblig. & Aucune \\
+\bottomrule
+\end{tabular}
+
+\subsection{Niveaux de Vol --- Règle Semi-Circulaire}
+\begin{itemize}[nosep]
+\item Route 000°--179° (Est)~: FL \textbf{impairs} (310, 330, 350, 370...)
+\item Route 180°--359° (Ouest)~: FL \textbf{pairs} (320, 340, 360, 380...)
+\item Au-dessus FL290~: espacement RVSM de 1\,000 ft
+\end{itemize}
+
+\subsection{Navigation Transatlantique}
+Pas de VOR/radar au-dessus de l'océan $\to$ \textbf{GPS + IRS}. Routes NAT tracks (révisées 2$\times$/jour selon jet stream).
+
+%=============================================================
+\section{MÉTÉOROLOGIE AÉRONAUTIQUE}
+%=============================================================
+
+\subsection{Atmosphère ISA}
+
+\begin{tabular}{p{4cm}p{10.5cm}}
+\toprule
+Température au sol & \textbf{15°C} \\
+Pression au sol & \textbf{1013.25 hPa} \\
+Gradient thermique & \textbf{$-$2°C / 1\,000 ft} ($-$6.5°C/km) \\
+Tropopause & $\sim$36\,000 ft (11 km), T = $-$56.5°C \\
+\bottomrule
+\end{tabular}
+
+\subsection{Tableau Températures ISA}
+
+\begin{tabular}{p{3cm}p{3cm}p{3cm}p{3cm}p{3cm}}
+\toprule
+0 ft & 5\,000 ft & 10\,000 ft & 20\,000 ft & 36\,000 ft \\
+\midrule
+\textbf{+15°C} & \textbf{+5°C} & \textbf{$-$5°C} & \textbf{$-$25°C} & \textbf{$-$56.5°C} \\
+\bottomrule
+\end{tabular}
+
+\subsection{Calages Altimétriques}
+
+\begin{tabular}{p{3cm}p{4cm}p{7.5cm}}
+\toprule
+\textbf{QNH} & Affiche l'\textbf{altitude} & En dessous de l'altitude de transition \\
+\textbf{QFE} & Affiche la \textbf{hauteur} & Au-dessus du terrain (peu utilisé en France) \\
+\textbf{1013.25 hPa} & Affiche le \textbf{niveau de vol} & Au-dessus de l'altitude de transition \\
+\bottomrule
+\end{tabular}
+
+\begin{memobox}
+1 hPa $\approx$ 28 ft. \textbf{<<~High to low, look out below!~>>} (haute $\to$ basse pression = on descend sans le savoir)
+\end{memobox}
+
+\subsection{Nuages}
+
+\begin{tabular}{p{2cm}p{3cm}p{2cm}p{7cm}}
+\toprule
+\textbf{Étage} & \textbf{Type} & \textbf{Altitude} & \textbf{Caractéristiques} \\
+\midrule
+Haut & Cirrus, Cs, Cc & 6--12 km & Cristaux de glace \\
+Moyen & Altostratus, Ac & 2--6 km & Voile gris \\
+Bas & Stratus, Sc, Ns & 0--2 km & Brume, pluie continue \\
+\rowcolor{warnred}
+Dév. vert. & \textbf{Cumulonimbus (Cb)} & 0.5--15 km & \textbf{LE PLUS DANGEREUX}~: orages, grêle, cisaillement \\
+\bottomrule
+\end{tabular}
+
+\subsection{Phénomènes Clés}
+
+\begin{itemize}[nosep]
+\item \textbf{Jet stream}~: 150--300 kt à la tropopause, d'ouest en est $\to$ NY$\to$Paris plus rapide
+\item \textbf{Anticyclone (H)}~: haute pression, sens horaire (HN), beau temps
+\item \textbf{Dépression (L)}~: basse pression, sens antihoraire (HN), mauvais temps
+\item \textbf{Cisaillement de vent}~: changement brutal, très dangereux basse altitude
+\item \textbf{Givrage}~: glace sur cellule/sondes (cause crash AF447)
+\end{itemize}
+
+\subsection{METAR --- Décodage}
+
+Exemple~: \texttt{METAR LFPG 101330Z 25015G28KT 9999 FEW035 SCT080 18/09 Q1018}
+
+\begin{tabular}{p{3cm}p{11.5cm}}
+\toprule
+LFPG & Paris CDG \\
+101330Z & Le 10, 13h30 UTC \\
+25015G28KT & Vent 250° à 15 kt, rafales 28 kt \\
+9999 & Visibilité $>$ 10 km \\
+FEW035 SCT080 & Quelques nuages 3\,500 ft, épars 8\,000 ft \\
+18/09 & Température 18°C, point de rosée 9°C \\
+Q1018 & QNH = 1018 hPa \\
+\bottomrule
+\end{tabular}
+
+\begin{memobox}
+Couverture~: FEW (1-2/8) $\to$ SCT (3-4/8) $\to$ BKN (5-7/8) $\to$ OVC (8/8).\\
+\textbf{CAVOK} = Visi $>$10 km + pas de nuages $<$5000 ft + pas de phénomène significatif.
+\end{memobox}
+
+\newpage
+%=============================================================
+\section{AÉROPORTS \& INFRASTRUCTURE}
+%=============================================================
+
+\subsection{Paris-Charles de Gaulle (CDG / LFPG)}
+\begin{itemize}[nosep]
+\item \textbf{4 pistes}~: 08L/26R (4142m), 08R/26L (2700m), 09L/27R (2700m), 09R/27L (4200m)
+\item Orientation~: Est-Ouest ($\sim$080°--090°)
+\item Hub Air France depuis \textbf{1996}. $\sim$75 millions pax/an (2e en Europe)
+\end{itemize}
+
+\subsection{Paris-Orly (ORY / LFPO)}
+\begin{itemize}[nosep]
+\item \textbf{3 pistes}~: 02/20, 06/24, 07/25. Couvre-feu 23h30--06h00
+\item $\sim$33 millions pax/an. Base principale Transavia France
+\end{itemize}
+
+\subsection{Codes OACI France}
+\textbf{LF} = France. LFPG (CDG), LFPO (Orly), LFBO (Toulouse), LFLL (Lyon), LFML (Marseille), LFBD (Bordeaux), LFMN (Nice).
+
+%=============================================================
+\section{ALLIANCES \& FIDÉLITÉ}
+%=============================================================
+
+\subsection{SkyTeam --- 18 Membres (2025)}
+Fondée le 22 juin 2000. Siège~: Amsterdam.
+
+\begin{multicols}{3}
+\begin{enumerate}[nosep]
+\item \textbf{Air France}
+\item \textbf{KLM}
+\item \textbf{Delta Air Lines}
+\item \textbf{Korean Air}
+\item Aeroméxico
+\item Aerolíneas Argentinas
+\item Air Europa
+\item China Airlines
+\item China Eastern
+\item Garuda Indonesia
+\item Kenya Airways
+\item Middle East Airlines
+\item SAS
+\item Saudia
+\item TAROM
+\item Vietnam Airlines
+\item Virgin Atlantic
+\item Xiamen Air
+\end{enumerate}
+\end{multicols}
+
+\subsection{Les 3 Grandes Alliances}
+
+\begin{tabular}{p{3cm}p{1.5cm}p{10cm}}
+\toprule
+\textbf{Alliance} & \textbf{Fondée} & \textbf{Compagnies phares} \\
+\midrule
+Star Alliance & 1997 & Lufthansa, United, ANA, Swiss, Turkish, Singapore Airlines \\
+\textbf{SkyTeam} & \textbf{2000} & Air France, Delta, KLM, Korean Air \\
+Oneworld & 1999 & British Airways, American, Qantas, JAL, Iberia, Cathay Pacific \\
+\bottomrule
+\end{tabular}
+
+%=============================================================
+\section{SÉCURITÉ \& ÉVÉNEMENTS MAJEURS}
+%=============================================================
+
+\begin{longtable}{p{2cm}p{3.5cm}p{9cm}}
+\toprule
+\textbf{Date} & \textbf{Événement} & \textbf{Détails} \\
+\midrule
+1994 & AF8969 détourné & GIA, intervention \textbf{GIGN} à Marseille-Marignane \\
+\rowcolor{warnred}
+\textbf{25/07/2000} & \textbf{Crash Concorde} & Gonesse (CDG). 113 morts. Débris pneu $\to$ réservoir percé $\to$ incendie \\
+11/09/2001 & Attentats 11 sept. & 4 avions, $\sim$3000 morts. Révolution sûreté aérienne \\
+\rowcolor{warnred}
+\textbf{01/06/2009} & \textbf{Vol AF447} Rio-Paris & \textbf{A330}, 228 morts. \textbf{Sondes Pitot givrées} $\to$ perte contrôle $\to$ décrochage \\
+15/01/2009 & Miracle Hudson & Cpt \textbf{Sullenberger}, A320, 155 survivants (tous) \\
+2014 & MH370 disparu & B777, océan Indien, 239 à bord, jamais retrouvé \\
+2015 & Germanwings 9525 & A320, crash volontaire Alpes, 150 morts \\
+2018-19 & Crashes B737 MAX & Système \textbf{MCAS} défaillant, 346 morts, cloué au sol 20 mois \\
+\bottomrule
+\end{longtable}
+
+%=============================================================
+\section{CODES, COMMUNICATIONS \& RÉGLEMENTATION}
+%=============================================================
+
+\subsection{Codes Transpondeur d'Urgence}
+
+\begin{tabular}{p{2cm}p{4cm}p{8.5cm}}
+\toprule
+\textbf{7500} & Détournement (hijack) & <<~75 = someone's taken alive~>> \\
+\textbf{7600} & Panne radio & <<~76 = need to fix~>> \\
+\textbf{7700} & Urgence générale & <<~77 = going to heaven~>> \\
+\bottomrule
+\end{tabular}
+
+\subsection{Alphabet OACI}
+A-Alpha, B-Bravo, C-Charlie, D-Delta, E-Echo, F-Foxtrot, G-Golf, H-Hotel, I-India, J-Juliet, K-Kilo, L-Lima, M-Mike, N-November, O-Oscar, P-Papa, Q-Quebec, R-Romeo, S-Sierra, T-Tango, U-Uniform, V-Victor, \textbf{W-Whiskey}, X-X-ray, Y-Yankee, Z-Zulu.
+
+\subsection{Organismes Internationaux}
+
+\begin{tabular}{p{2.5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{OACI} (ICAO) & Org. Aviation Civile Internationale & Normes mondiales (1944, Convention de Chicago) \\
+\textbf{IATA} & International Air Transport Association & Association des compagnies (1945) \\
+\textbf{EASA} & EU Aviation Safety Agency & Sécurité aérienne européenne (2002) \\
+\textbf{DGAC} & Direction Gén. Aviation Civile & Autorité française \\
+\textbf{BEA} & Bureau Enquêtes et Analyses & Enquêtes accidents France \\
+\textbf{Eurocontrol} & --- & Gestion trafic aérien européen \\
+\bottomrule
+\end{tabular}
+
+\subsection{Licences de Pilote}
+
+\begin{tabular}{p{2cm}p{5cm}p{7.5cm}}
+\toprule
+BIA & Brevet Initiation Aéro & Initiation théorique (lycée) \\
+PPL & Private Pilot Licence & Vol privé, non rémunéré \\
+CPL & Commercial Pilot Licence & Vol rémunéré, copilote \\
+\rowcolor{aflight}
+\textbf{ATPL} & Airline Transport Pilot Licence & \textbf{Commandant de bord} --- objectif des Cadets \\
+MPL & Multi-crew Pilot Licence & Copilote en équipage multi-pilotes \\
+\bottomrule
+\end{tabular}
+
+\subsection{Unités Aéronautiques}
+
+\begin{tabular}{p{3cm}p{4cm}p{7.5cm}}
+\toprule
+Altitude & \textbf{Pieds (ft)} & 1 ft = 0.3048 m \\
+Distance & \textbf{Mille nautique (NM)} & 1 NM = \textbf{1\,852 m} \\
+Vitesse & \textbf{N\oe ud (kt)} & 1 kt = 1 NM/h = \textbf{1.852 km/h} \\
+Pression & hPa & Standard~: 1013.25 hPa \\
+\bottomrule
+\end{tabular}
+
+\newpage
+%=============================================================
+\section{QCM D'ENTRAÎNEMENT --- 100 QUESTIONS}
+%=============================================================
+
+\textit{Conditions réelles~: 15-30s par question. Bonne réponse~: +3 pts. Mauvaise~: $-$1 pt.}
+
+\input{qcm_psy0}
+
+\input{supplement_psy0}
+
+\newpage
+%=============================================================
+\section*{FICHES MÉMO EXPRESS}
+\addcontentsline{toc}{section}{FICHES MÉMO EXPRESS}
+%=============================================================
+
+\begin{tcolorbox}[colback=aflight, colframe=afblue, title=\textbf{Top 15 Dates Incontournables}]
+\begin{multicols}{2}
+\begin{enumerate}[nosep]
+\item \textbf{1890} --- Ader (Éole)
+\item \textbf{1903} --- Frères Wright
+\item \textbf{1909} --- Blériot (Manche)
+\item \textbf{1927} --- Lindbergh (Atlantique)
+\item \textbf{1933} --- Création Air France
+\item \textbf{1944} --- Convention Chicago $\to$ OACI
+\item \textbf{1947} --- Mur du son (Yeager)
+\item \textbf{1969} --- Concorde + B747 + Apollo 11
+\item \textbf{1970} --- Création Airbus
+\item \textbf{1988} --- A320 chez AF (fly-by-wire)
+\item \textbf{1996} --- Hub CDG
+\item \textbf{2000} --- SkyTeam
+\item \textbf{2004} --- Air France-KLM
+\item \textbf{2019} --- A350 chez AF
+\item \textbf{2020} --- Retrait A380
+\end{enumerate}
+\end{multicols}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=memoyellow, colframe=orange!70, title=\textbf{Chiffres à Connaître Par C\oe ur}]
+\begin{multicols}{2}
+\begin{itemize}[nosep]
+\item Pistes CDG~: \textbf{4}
+\item Pistes Orly~: \textbf{3}
+\item Membres SkyTeam~: \textbf{18}
+\item Flotte AF~: \textbf{$\sim$228 avions}
+\item Croisière A320~: \textbf{Mach 0.78} (828 km/h)
+\item Croisière A350~: \textbf{Mach 0.85}
+\item Croisière Concorde~: \textbf{Mach 2.02}
+\item ISA sol~: \textbf{15°C / 1013.25 hPa}
+\item Gradient ISA~: \textbf{$-$2°C / 1000 ft}
+\item Tropopause~: \textbf{11 km / 36000 ft}
+\item 1 NM = \textbf{1\,852 m}
+\item 1 kt = \textbf{1.852 km/h}
+\item Max sous FL100~: \textbf{250 kt}
+\item 1 hPa $\approx$ \textbf{28 ft}
+\end{itemize}
+\end{multicols}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=okgreen, colframe=green!50!black, title=\textbf{Mnémotechniques}]
+\begin{itemize}[nosep]
+\item \textbf{Transpondeur}~: 75 (hijack) / 76 (radio) / 77 (emergency)
+\item \textbf{Turboréacteur}~: Compresseur $\to$ Combustion $\to$ Turbine $\to$ Tuyère
+\item \textbf{Axes}~: Roulis=Ailerons / Tangage=Profondeur / Lacet=Direction
+\item \textbf{Calages}~: QNH=Altitude / QFE=Hauteur / 1013=FL
+\item \textbf{Pression}~: <<~High to low, look out below!~>>
+\item \textbf{Moteurs}~: GE90 $\to$ B777 | Trent $\to$ A350 | CFM56 $\to$ A320/A340/B737
+\end{itemize}
+\end{tcolorbox}
+
+\vfill
+\begin{center}
+\rule{0.5\textwidth}{1pt}\\[0.5cm]
+{\footnotesize Sources~: Annales PSY0 2018, 2019, 2020 (Pilotest/Aeronet), Fiches Culture G AF ASP v5.1, Air France Corporate 2025, DGAC, SkyTeam, Airbus, Boeing}\\[0.3cm]
+{\large\textbf{Bonne chance pour ta sélection, futur(e) pilote~!}}
+\end{center}
+
+\end{document}

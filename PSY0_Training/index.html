@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSY0 Air France - Entraînement Complet</title>
+    <meta name="description" content="Application d'entraînement PSY0 Air France — QCM, Flashcards, Statistiques">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>✈️ <span>PSY0</span> Air France</h1>
+        <div class="header-right">
+            <nav class="tabs" id="main-tabs">
+                <button class="tab active" data-tab="qcm">QCM</button>
+                <button class="tab" data-tab="flashcards">Flashcards</button>
+                <button class="tab" data-tab="stats">Stats</button>
+            </nav>
+            <button class="theme-toggle" id="theme-toggle" title="Mode sombre">🌙</button>
+        </div>
+    </header>
+    <main>
+        <!-- ========== QCM HOME ========== -->
+        <section id="qcm-home" class="screen active">
+            <div class="logo-wrapper">✈️</div>
+            <h2>Culture Aéronautique</h2>
+            <p>3022 Questions · 30 avec photos · 2742 Flashcards</p>
+
+            <!-- Mastery Indicator -->
+            <div class="mastery-container" id="mastery-container" style="display:none;">
+                <div class="mastery-ring">
+                    <svg viewBox="0 0 42 42">
+                        <circle class="ring-bg" cx="21" cy="21" r="18" />
+                        <circle class="ring-fill" id="mastery-ring-fill" cx="21" cy="21" r="18" stroke-dasharray="113.1"
+                            stroke-dashoffset="113.1" />
+                    </svg>
+                    <div class="mastery-pct" id="mastery-pct">0%</div>
+                </div>
+                <div class="mastery-info">
+                    <div class="mastery-label">Maîtrise globale</div>
+                    <div class="mastery-detail" id="mastery-detail">0 / 300 questions maîtrisées</div>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="search-input"
+                    placeholder="Rechercher une question par mot-clé...">
+            </div>
+            <div class="search-results" id="search-results" style="display:none;"></div>
+
+            <div class="settings-group" id="qcm-settings">
+                <div class="setting-item">
+                    <div><label>Mode</label><span class="hint" id="mode-hint">Les 300 questions dans l'ordre</span>
+                    </div>
+                    <select id="mode-select">
+                        <option value="random20">Série Aléatoire (20 Q)</option>
+                        <option value="random50">Série Aléatoire (50 Q)</option>
+                        <option value="random100">Série Aléatoire (100 Q)</option>
+                        <option value="weak">Mes points faibles</option>
+                        <option value="exam">🔒 Examen réel (80 Q)</option>
+                        <option value="all">Toutes (3022 Q)</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <div><label>Catégorie</label></div>
+                    <select id="cat-select">
+                        <option value="all">Toutes les catégories</option>
+                    </select>
+                </div>
+                <div class="setting-item" id="timer-setting">
+                    <div><label>Chronomètre</label><span class="hint">15-30s par question comme au vrai PSY0</span>
+                    </div>
+                    <select id="timer-select">
+                        <option value="0">Désactivé</option>
+                        <option value="15">15 secondes</option>
+                        <option value="20">20 secondes</option>
+                        <option value="30">30 secondes</option>
+                    </select>
+                </div>
+            </div>
+            <button id="start-btn" class="btn btn-primary">Décoller 🚀</button>
+        </section>
+
+        <!-- ========== QUESTION ========== -->
+        <section id="question-screen" class="screen">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span id="progress-text">Question 1 sur 300</span>
+                    <span id="score-text">Score: 0</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            <div id="timer-bar-container" class="timer-bar-container" style="display:none;">
+                <div class="timer-bar-fill" id="timer-bar-fill"></div>
+                <span class="timer-label" id="timer-label">30s</span>
+            </div>
+            <div id="exam-indicator" class="exam-badge" style="display:none;">Mode Examen</div>
+            <div class="category-badge" id="q-category"></div>
+            <div id="question-image" class="question-image-container" style="display:none;"></div>
+            <h2 id="question-text" class="question-text"></h2>
+            <div class="options-grid" id="options-container"></div>
+            <div id="explanation-box" class="explanation-box" style="display:none;"></div>
+            <div class="keyboard-hint" id="keyboard-hint">
+                <kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> répondre · <kbd>Entrée</kbd> suivant
+            </div>
+            <div class="actions">
+                <button id="next-btn" class="btn btn-next">Suivant ➔</button>
+            </div>
+        </section>
+
+        <!-- ========== SUMMARY ========== -->
+        <section id="summary-screen" class="screen">
+            <div class="summary-header">
+                <h2>Bilan du vol 🛬</h2>
+                <div class="summary-score" id="final-score">85%</div>
+                <p class="score-text" id="final-stats"></p>
+            </div>
+            <div class="cat-breakdown" id="cat-breakdown"></div>
+            <div id="review-container" class="review-section" style="display:none;">
+                <h3>Questions à revoir</h3>
+                <div class="review-list" id="review-list"></div>
+            </div>
+            <button id="restart-btn" class="btn btn-primary">Nouveau vol d'entraînement</button>
+        </section>
+
+        <!-- ========== FLASHCARDS HOME ========== -->
+        <section id="flashcards-home" class="screen">
+            <div class="logo-wrapper">🃏</div>
+            <h2>Flashcards</h2>
+            <p>2742 fiches mémo pour réviser les faits clés</p>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <div><label>Catégorie</label></div>
+                    <select id="fc-cat-select">
+                        <option value="all">Toutes</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <div><label>Nombre de cartes</label><span class="hint">Limiter la session</span></div>
+                    <select id="fc-count-select">
+                        <option value="20">20 cartes</option>
+                        <option value="50" selected>50 cartes</option>
+                        <option value="100">100 cartes</option>
+                        <option value="0">Toutes</option>
+                    </select>
+                </div>
+            </div>
+            <button id="fc-start-btn" class="btn btn-primary">Commencer les flashcards</button>
+        </section>
+
+        <!-- ========== FLASHCARD VIEW ========== -->
+        <section id="flashcard-screen" class="screen">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span id="fc-progress">Carte 1 sur 50</span>
+                    <span id="fc-count"></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="fc-progress-fill"></div>
+                </div>
+            </div>
+            <div class="fc-category-badge" id="fc-cat-badge"><span></span></div>
+            <div class="flashcard" id="flashcard" onclick="app.flipCard()">
+                <div class="flashcard-inner" id="flashcard-inner">
+                    <div class="flashcard-front" id="fc-front"></div>
+                    <div class="flashcard-back" id="fc-back"></div>
+                </div>
+            </div>
+            <p class="fc-hint">Cliquez ou appuyez <kbd>Espace</kbd> pour retourner</p>
+            <div class="fc-actions">
+                <button class="btn btn-secondary" onclick="app.fcMark(false)">❌ À revoir</button>
+                <button class="btn btn-success" onclick="app.fcMark(true)">✅ Connue</button>
+            </div>
+            <div class="keyboard-hint"><kbd>Espace</kbd> retourner · <kbd>1</kbd> à revoir · <kbd>2</kbd> connue</div>
+        </section>
+
+        <!-- ========== FLASHCARD SUMMARY ========== -->
+        <section id="fc-summary-screen" class="screen">
+            <div class="fc-summary">
+                <div class="logo-wrapper">🃏</div>
+                <h2>Session terminée !</h2>
+                <div class="fc-summary-score" id="fc-final-score">0%</div>
+                <p class="fc-summary-detail" id="fc-final-detail"></p>
+                <div class="fc-summary-bar">
+                    <div class="fc-summary-bar-fill" id="fc-summary-bar-fill"></div>
+                </div>
+                <button class="btn btn-primary" onclick="app.showScreen('flashcards-home')">Nouvelle session</button>
+            </div>
+        </section>
+
+        <!-- ========== STATS ========== -->
+        <section id="stats-screen" class="screen">
+            <div class="logo-wrapper">📊</div>
+            <h2>Vos Statistiques</h2>
+            <div id="stats-content" class="stats-content"></div>
+            <div class="stats-actions">
+                <button class="btn btn-outline btn-sm" onclick="app.exportStats()">📤 Exporter</button>
+                <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                    📥 Importer
+                    <input type="file" accept=".json" style="display:none;" onchange="app.importStats(event)">
+                </label>
+                <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);"
+                    onclick="app.clearStats()">🗑️ Réinitialiser</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="data/questions.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
