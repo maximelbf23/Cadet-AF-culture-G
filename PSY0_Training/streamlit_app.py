@@ -430,14 +430,28 @@ def load_questions_safe():
         data = json.load(f)
     return data['qcm'], data['flashcards']
 
+def get_user_data_path(username="Maxime"):
+    safe_name = username.lower().replace(" ", "_")
+    return os.path.join(BASE_DIR, "data", f"user_data_{safe_name}.json")
+
 def load_user_data():
-    if os.path.exists(USER_DATA_PATH):
-        with open(USER_DATA_PATH, 'r', encoding='utf-8') as f:
+    username = st.session_state.get("current_profile", "Maxime")
+    path = get_user_data_path(username)
+    
+    old_path = os.path.join(BASE_DIR, "data", "user_data.json")
+    if username == "Maxime" and os.path.exists(old_path) and not os.path.exists(path):
+        import shutil
+        shutil.copy(old_path, path)
+        
+    if os.path.exists(path):
+        with open(path, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {"sessions": [], "flashcard_mastery": {}}
 
 def save_user_data(data):
-    with open(USER_DATA_PATH, 'w', encoding='utf-8') as f:
+    username = st.session_state.get("current_profile", "Maxime")
+    path = get_user_data_path(username)
+    with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
@@ -467,6 +481,20 @@ def render_sidebar():
             label_visibility="collapsed",
         )
         
+        st.markdown("---")
+        
+        if "current_profile" not in st.session_state:
+            st.session_state.current_profile = "Maxime"
+            
+        profils = ["Maxime", "Ami(e)"]
+        profil_actuel = st.selectbox(
+            "👤 Profil actuel", profils, 
+            index=profils.index(st.session_state.current_profile) if st.session_state.current_profile in profils else 0
+        )
+        if profil_actuel != st.session_state.current_profile:
+            st.session_state.current_profile = profil_actuel
+            st.rerun()
+
         st.markdown("---")
         
         user_data = load_user_data()
