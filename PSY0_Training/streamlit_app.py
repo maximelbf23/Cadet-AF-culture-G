@@ -87,8 +87,11 @@ st.markdown("""
 /* ── Hide sidebar & its toggle button completely ── */
 [data-testid="stSidebar"],
 [data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"],
-button[kind="header"] { display: none !important; }
+[data-testid="stSidebarCollapsedControl"] { display: none !important; }
+
+/* Hide the Streamlit toolbar (hamburger / deploy / manage) */
+[data-testid="stHeader"],
+[data-testid="stToolbar"] { display: none !important; }
 
 /* ══════════════════════════════════════════════════════════════
    HORIZONTAL TAB NAVIGATION
