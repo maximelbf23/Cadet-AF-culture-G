@@ -21,6 +21,7 @@ import plotly.graph_objects as go
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, "data", "questions.json")
 USER_DATA_PATH = os.path.join(BASE_DIR, "data", "user_data.json")
+XLSX_PATH = os.path.join(BASE_DIR, "kd-tools-quizlet.xlsx")
 
 st.set_page_config(
     page_title="PSY0 Air France — Entraînement",
@@ -471,11 +472,82 @@ em { font-style: italic; color: var(--amber-deep); }
 # ============================================================
 # DATA
 # ============================================================
+# Mapping catégories anglais → français
+CAT_MAP = {
+    "theory":    "Technique",
+    "history":   "Histoire",
+    "aircrafts": "Aéronefs",
+    "airline":   "Air France & Flotte",
+    "airports":  "Aéroports",
+    "geography": "Géographie",
+    "fleet":     "Air France & Flotte",
+    "military":  "Militaire",
+    "network":   "Réseau",
+}
+
+VALID_CATS = set(CAT_MAP.keys())
+
 @st.cache_data
 def load_questions_safe():
-    with open(DATA_PATH, 'r', encoding='utf-8') as f:
+    """Charge les QCM depuis le xlsx, les flashcards depuis questions.json."""
+    import pandas as pd
+
+    # ── QCM depuis xlsx ──────────────────────────────────────
+    df = pd.read_excel(XLSX_PATH)
+
+    # Nettoyer : garder uniquement les lignes dont la catégorie est connue
+    df = df[df["category"].isin(VALID_CATS)].copy()
+
+    # Supprimer les lignes sans question ou sans bonne réponse
+    df = df.dropna(subset=["question", "correct_answer"])
+
+    # Supprimer les lignes sans au moins 1 distractor
+    df = df.dropna(subset=["Answer 1"])
+
+    # Réinitialiser l'index
+    df = df.reset_index(drop=True)
+
+    qcm_data = []
+    for i, row in df.iterrows():
+        # Récupérer les distractors disponibles (peut y avoir des NaN)
+        distractors = [
+            str(row["Answer 1"]).strip(),
+            str(row["Answer 2 "]).strip() if pd.notna(row.get("Answer 2 ")) else None,
+            str(row["Answer 3"]).strip() if pd.notna(row.get("Answer 3")) else None,
+        ]
+        distractors = [d for d in distractors if d and d != "nan"]
+
+        # Construire la liste des 4 options mélangées
+        correct_text = str(row["correct_answer"]).strip()
+        opts_texts = [correct_text] + distractors[:3]
+
+        # Mélanger les options de façon déterministe pour le cache
+        # (on utilise l'index comme seed pour stabilité)
+        rng = random.Random(i + 42)
+        rng.shuffle(opts_texts)
+
+        letters = ["a", "b", "c", "d"]
+        options = [
+            {"id": letters[j], "text": txt}
+            for j, txt in enumerate(opts_texts[:4])
+        ]
+        correct_letter = letters[opts_texts.index(correct_text)]
+
+        qcm_data.append({
+            "id": int(row["id_display"]) if pd.notna(row.get("id_display")) else i + 10000,
+            "question": str(row["question"]).strip(),
+            "options": options,
+            "answer": correct_letter,
+            "explanation": "",
+            "category": CAT_MAP.get(str(row["category"]).strip(), str(row["category"]).strip()),
+        })
+
+    # ── Flashcards depuis JSON (inchangé) ───────────────────
+    with open(DATA_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return data['qcm'], data['flashcards']
+    fc_data = data.get("flashcards", [])
+
+    return qcm_data, fc_data
 
 def get_user_data_path(username="Maxime"):
     safe_name = username.lower().replace(" ", "_")
@@ -631,11 +703,11 @@ def page_accueil(qcm_data, fc_data):
     st.markdown(f"""
     <div class="stats-strip">
         <div class="stat-cell">
-            <div class="sc-num">3022</div>
+            <div class="sc-num">{len(qcm_data)}</div>
             <div class="sc-label">QCM</div>
         </div>
         <div class="stat-cell">
-            <div class="sc-num">2742</div>
+            <div class="sc-num">{len(fc_data)}</div>
             <div class="sc-label">Flashcards</div>
         </div>
         <div class="stat-cell">
