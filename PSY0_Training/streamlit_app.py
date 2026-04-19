@@ -81,23 +81,22 @@ st.markdown("""
 
 /* ── Base ── */
 .stApp { font-family: var(--sans); background: var(--bg); color: var(--text); }
-.stApp > header { background: transparent !important; }
-.block-container { padding-top: 1rem !important; max-width: 960px !important; }
+.block-container { padding-top: 0.5rem !important; max-width: 960px !important; }
 
-/* ── Hide sidebar & its toggle button completely ── */
+/* ── Hide sidebar & toggle only (pas le header — les tabs sont dessous) ── */
 [data-testid="stSidebar"],
 [data-testid="collapsedControl"],
 [data-testid="stSidebarCollapsedControl"] { display: none !important; }
 
-/* Hide the Streamlit toolbar (hamburger / deploy / manage) */
-[data-testid="stHeader"],
-[data-testid="stToolbar"] { display: none !important; }
+/* Masquer le deploy/hamburger mais PAS le header complet */
+[data-testid="stToolbarActions"],
+[data-testid="stDecoration"] { display: none !important; }
 
 /* ══════════════════════════════════════════════════════════════
    HORIZONTAL TAB NAVIGATION
    ══════════════════════════════════════════════════════════════ */
 
-/* Tab bar background + bottom border */
+/* Tab bar */
 [data-baseweb="tab-list"] {
     background: var(--paper) !important;
     border-bottom: 1px solid var(--rule) !important;
@@ -118,7 +117,6 @@ st.markdown("""
     transition: color 0.15s !important;
     letter-spacing: 0.01em !important;
 }
-
 [data-baseweb="tab"]:hover {
     color: var(--text) !important;
     background: var(--ink-50) !important;
@@ -130,37 +128,37 @@ st.markdown("""
     font-weight: 600 !important;
 }
 
-/* Amber underline indicator */
+/* Amber underline */
 [data-baseweb="tab-highlight"] {
     background-color: var(--amber-deep) !important;
     height: 2px !important;
     border-radius: 2px 2px 0 0 !important;
 }
 
-/* Tab panel — remove excess top padding */
 [data-baseweb="tab-panel"] { padding: 0 !important; }
 
 /* ══════════════════════════════════════════════════════════════
-   QCM ANSWER CARDS — radio options as beautiful selection cards
+   QCM ANSWER CARDS
    ══════════════════════════════════════════════════════════════ */
 
-/* Card wrapper */
+/* Card wrapper — IMPORTANT: display:flex sinon le texte disparaît */
 [data-baseweb="radio"] {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
     background: var(--paper);
     border: 1.5px solid var(--rule);
     border-radius: 12px;
     padding: 14px 18px;
-    gap: 14px;
-    align-items: center;
     cursor: pointer;
-    transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease), background 0.18s;
+    transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
     box-shadow: var(--shadow-xs);
     width: 100%;
+    box-sizing: border-box;
 }
 
 [data-baseweb="radio"]:hover {
     border-color: var(--amber);
-    box-shadow: var(--shadow-focus);
     background: var(--amber-soft);
 }
 
@@ -170,33 +168,22 @@ label:has(input:checked) [data-baseweb="radio"] {
     box-shadow: var(--shadow-focus);
 }
 
-/* Indicator dot */
+/* Cacher le cercle BaseWeb natif (laid) */
 [data-baseweb="radio"] > div:first-child {
-    width: 18px !important;
-    height: 18px !important;
-    min-width: 18px !important;
-    border-radius: 50% !important;
-    border: 2px solid var(--rule) !important;
-    background: transparent !important;
-    transition: all 0.15s !important;
-    flex-shrink: 0 !important;
+    display: none !important;
 }
 
-label:has(input:checked) [data-baseweb="radio"] > div:first-child {
-    border-color: var(--amber-deep) !important;
-    background: var(--amber-deep) !important;
-    box-shadow: 0 0 0 3px var(--amber-glow) !important;
-}
-
-/* Answer text */
+/* Lettre/texte de la réponse */
+[data-baseweb="radio"] div,
 [data-baseweb="radio"] span {
     font-family: var(--sans) !important;
     font-size: 15px !important;
     color: var(--text) !important;
     font-weight: 500 !important;
-    line-height: 1.4 !important;
+    line-height: 1.5 !important;
 }
 
+label:has(input:checked) [data-baseweb="radio"] div,
 label:has(input:checked) [data-baseweb="radio"] span {
     color: var(--amber-deep) !important;
 }
