@@ -27,7 +27,7 @@ st.set_page_config(
     page_title="PSY0 Air France — Entraînement",
     page_icon="✈️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # ============================================================
@@ -82,80 +82,66 @@ st.markdown("""
 /* ── Base ── */
 .stApp { font-family: var(--sans); background: var(--bg); color: var(--text); }
 .stApp > header { background: transparent !important; }
-.block-container { padding-top: 2rem !important; max-width: 920px !important; }
+.block-container { padding-top: 1rem !important; max-width: 960px !important; }
 
-/* ── Sidebar shell ── */
-[data-testid="stSidebar"] {
-    background: var(--paper) !important;
-    border-right: 1px solid var(--rule) !important;
-}
-[data-testid="stSidebar"] * { font-family: var(--sans); }
-[data-testid="stSidebar"] hr { border-color: var(--rule-soft) !important; }
+/* ── Hide sidebar & its toggle button completely ── */
+[data-testid="stSidebar"],
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"],
+button[kind="header"] { display: none !important; }
 
 /* ══════════════════════════════════════════════════════════════
-   SIDEBAR NAVIGATION — transform radio → clean pill nav
+   HORIZONTAL TAB NAVIGATION
    ══════════════════════════════════════════════════════════════ */
 
-/* Hide the "nav" widget label */
-[data-testid="stSidebar"] .stRadio [data-testid="stWidgetLabel"] {
-    display: none !important;
+/* Tab bar background + bottom border */
+[data-baseweb="tab-list"] {
+    background: var(--paper) !important;
+    border-bottom: 1px solid var(--rule) !important;
+    gap: 0 !important;
+    padding: 0 4px !important;
 }
 
-/* Flex column with small gap */
-[data-testid="stSidebar"] .stRadio > div > div {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 2px !important;
-}
-
-/* Each nav item label */
-[data-testid="stSidebar"] .stRadio label {
-    display: flex !important;
-    align-items: center !important;
-    padding: 10px 14px !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    margin: 0 !important;
-    transition: background 0.15s, color 0.15s !important;
-    font-size: 14px !important;
+/* Individual tab buttons */
+[data-baseweb="tab"] {
+    font-family: var(--sans) !important;
+    font-size: 13.5px !important;
     font-weight: 500 !important;
-    color: var(--text-dim) !important;
-    width: 100% !important;
-    line-height: 1.4 !important;
-}
-
-/* ✦ Kill the ugly radio circle in sidebar ONLY ✦ */
-[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child {
-    width: 0 !important;
-    height: 0 !important;
-    min-width: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    color: var(--text-mute) !important;
+    padding: 13px 20px !important;
+    border-radius: 0 !important;
+    background: transparent !important;
     border: none !important;
-    background: none !important;
-    overflow: hidden !important;
-    display: block !important;
+    transition: color 0.15s !important;
+    letter-spacing: 0.01em !important;
 }
 
-/* Hover */
-[data-testid="stSidebar"] .stRadio label:hover {
-    background: var(--ink-100) !important;
+[data-baseweb="tab"]:hover {
     color: var(--text) !important;
+    background: var(--ink-50) !important;
 }
 
-/* Active / selected page */
-[data-testid="stSidebar"] .stRadio label:has(input:checked) {
-    background: var(--amber-soft) !important;
+/* Active tab */
+[aria-selected="true"][data-baseweb="tab"] {
     color: var(--amber-deep) !important;
     font-weight: 600 !important;
 }
 
+/* Amber underline indicator */
+[data-baseweb="tab-highlight"] {
+    background-color: var(--amber-deep) !important;
+    height: 2px !important;
+    border-radius: 2px 2px 0 0 !important;
+}
+
+/* Tab panel — remove excess top padding */
+[data-baseweb="tab-panel"] { padding: 0 !important; }
+
 /* ══════════════════════════════════════════════════════════════
-   QCM ANSWER CARDS — radio options styled as beautiful cards
-   (applies to all radios NOT in sidebar)
+   QCM ANSWER CARDS — radio options as beautiful selection cards
    ══════════════════════════════════════════════════════════════ */
 
-/* Card wrapper — the BaseWeb radio component */
+/* Card wrapper */
 [data-baseweb="radio"] {
     background: var(--paper);
     border: 1.5px solid var(--rule);
@@ -169,21 +155,19 @@ st.markdown("""
     width: 100%;
 }
 
-/* Hover on answer card */
 [data-baseweb="radio"]:hover {
     border-color: var(--amber);
     box-shadow: var(--shadow-focus);
     background: var(--amber-soft);
 }
 
-/* Selected answer card */
 label:has(input:checked) [data-baseweb="radio"] {
     border-color: var(--amber);
     background: var(--amber-soft);
     box-shadow: var(--shadow-focus);
 }
 
-/* The circle indicator — style as a clean dot */
+/* Indicator dot */
 [data-baseweb="radio"] > div:first-child {
     width: 18px !important;
     height: 18px !important;
@@ -195,14 +179,13 @@ label:has(input:checked) [data-baseweb="radio"] {
     flex-shrink: 0 !important;
 }
 
-/* Checked indicator dot */
 label:has(input:checked) [data-baseweb="radio"] > div:first-child {
     border-color: var(--amber-deep) !important;
     background: var(--amber-deep) !important;
     box-shadow: 0 0 0 3px var(--amber-glow) !important;
 }
 
-/* Answer text inside card */
+/* Answer text */
 [data-baseweb="radio"] span {
     font-family: var(--sans) !important;
     font-size: 15px !important;
@@ -215,34 +198,11 @@ label:has(input:checked) [data-baseweb="radio"] span {
     color: var(--amber-deep) !important;
 }
 
-/* Each option label wrapper (spacing) */
+/* Option label wrapper */
 .stRadio > div > div > label {
     display: block !important;
     margin: 5px 0 !important;
     padding: 0 !important;
-}
-
-/* Override: sidebar circle already killed above, re-override card styles */
-[data-testid="stSidebar"] [data-baseweb="radio"] {
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    gap: 0 !important;
-}
-[data-testid="stSidebar"] [data-baseweb="radio"]:hover {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-[data-testid="stSidebar"] label:has(input:checked) [data-baseweb="radio"] {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-[data-testid="stSidebar"] .stRadio > div > div > label {
-    margin: 1px 0 !important;
 }
 
 /* ── Headings ── */
@@ -317,8 +277,7 @@ em { font-style: italic; color: var(--amber-deep); }
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
     margin-bottom: 48px;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
+    border: 1px solid var(--rule);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-xs);
@@ -351,8 +310,7 @@ em { font-style: italic; color: var(--amber-deep); }
     display: grid;
     gap: 0;
     margin-bottom: 2rem;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
+    border: 1px solid var(--rule);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-xs);
@@ -1537,7 +1495,7 @@ def page_analytics():
 # PAGE: GÉOGRAPHIE (Capitales, Drapeaux, Cartes)
 # ============================================================
 def page_geographie():
-    html_path = Path(BASE_DIR) / "Capitale" / "Drapeau" / "index.html"
+    html_path = Path(BASE_DIR).parent / "Capitale" / "Drapeau" / "index.html"
 
     if not html_path.exists():
         st.markdown(
@@ -1559,13 +1517,25 @@ def page_geographie():
 # ============================================================
 def main():
     qcm_data, fc_data = load_questions_safe()
-    page = render_sidebar(qcm_data, fc_data)
-    
-    if page == "🏠 Accueil": page_accueil(qcm_data, fc_data)
-    elif page == "📝 QCM": page_qcm(qcm_data)
-    elif page == "🃏 Flashcards": page_flashcards(fc_data)
-    elif page == "📊 Analytics": page_analytics()
-    elif page == "🌍 Géographie": page_geographie()
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "🏠  Accueil",
+        "📝  QCM",
+        "🃏  Flashcards",
+        "📊  Analytics",
+        "🌍  Géographie",
+    ])
+
+    with tab1:
+        page_accueil(qcm_data, fc_data)
+    with tab2:
+        page_qcm(qcm_data)
+    with tab3:
+        page_flashcards(fc_data)
+    with tab4:
+        page_analytics()
+    with tab5:
+        page_geographie()
 
 if __name__ == "__main__":
     main()
