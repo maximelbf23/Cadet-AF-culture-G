@@ -10,6 +10,7 @@ import time
 import uuid
 import random
 from datetime import datetime
+from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -68,128 +69,224 @@ st.markdown("""
   --serif: "Newsreader", "Cormorant Garamond", Georgia, serif;
   --sans:  "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
   --mono:  "Geist Mono", "JetBrains Mono", monospace;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
   --shadow-xs: 0 1px 2px rgba(14,22,40,0.04);
   --shadow-sm: 0 2px 10px -2px rgba(14,22,40,0.06), 0 1px 3px rgba(14,22,40,0.04);
   --shadow-md: 0 18px 40px -18px rgba(14,22,40,0.18), 0 2px 6px rgba(14,22,40,0.04);
 }
 
-/* Base App */
+/* ── Base App ── */
 .stApp {
     font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
 }
 .stApp > header { background: transparent !important; }
-.block-container { padding-top: 2rem; max-width: 920px; }
+.block-container { padding-top: 2rem; max-width: 940px; }
 
-/* Sidebar */
+/* ── Sidebar ── */
 [data-testid="stSidebar"] {
     background: var(--paper) !important;
     border-right: 1px solid var(--rule);
 }
-[data-testid="stSidebar"] * { color: var(--text-dim) !important; font-family: var(--sans); }
-[data-testid="stSidebar"] hr { border-color: var(--rule-soft) !important; }
-[data-testid="stSidebar"] .stRadio label { 
-    font-size: 0.95rem !important; font-weight: 500 !important;
-    padding: 0.5rem 1rem; border-radius: 999px; transition: all 0.2s;
-    border: 1px solid transparent; margin: 2px 0; font-family: var(--sans);
+[data-testid="stSidebar"] * {
+    color: var(--text-dim) !important;
+    font-family: var(--sans);
 }
-[data-testid="stSidebar"] .stRadio label:hover { 
+[data-testid="stSidebar"] hr { border-color: var(--rule-soft) !important; }
+[data-testid="stSidebar"] .stRadio label {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    transition: background 0.15s, color 0.15s;
+    margin: 2px 0;
+}
+[data-testid="stSidebar"] .stRadio label:hover {
     color: var(--text) !important;
+    background: oklch(88% 0.07 75 / 25%);
 }
 
-/* Headings */
-h1, h2, h3 { font-family: var(--serif) !important; font-weight: 400 !important; color: var(--text) !important; letter-spacing: -0.01em; }
+/* ── Headings ── */
+h1, h2, h3 {
+    font-family: var(--serif) !important;
+    font-weight: 400 !important;
+    color: var(--text) !important;
+    letter-spacing: -0.01em;
+}
 h1 { font-size: clamp(42px, 6vw, 68px) !important; line-height: 0.98 !important; }
 h2 { font-size: 32px !important; }
 h3 { font-size: 22px !important; font-weight: 500 !important; }
 em { font-style: italic; color: var(--amber-deep); }
 
-/* Typography specifics */
+/* ── Typography utils ── */
 .eyebrow {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text-mute);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
 }
 .eyebrow::before {
-  content: "";
-  width: 22px;
-  height: 1px;
-  background: var(--text-mute);
+    content: "";
+    width: 22px;
+    height: 1px;
+    background: var(--text-mute);
 }
 
+.section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 1.2rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+}
+
+/* ── Hero section ── */
 .hero-section {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 56px;
-  align-items: end;
-  margin-bottom: 56px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid var(--rule);
-  text-align: left;
+    display: block;
+    margin-bottom: 48px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--rule);
 }
 .hero-title {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: clamp(38px, 5vw, 56px);
-  line-height: 0.98;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  margin-bottom: 20px;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(38px, 5vw, 56px);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 16px;
 }
+.hero-title em { font-style: italic; color: var(--amber-deep); font-weight: 400; }
 .hero-subtitle {
-  font-family: var(--serif);
-  font-size: 19px;
-  line-height: 1.5;
-  color: var(--text-dim);
-  max-width: 38ch;
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 54ch;
 }
 .hero-divider { display: none; }
 
-/* Stats grid replaced by Stats Strip */
+/* ── Stats strip (4-col on Accueil) ── */
 .stats-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  margin-bottom: 48px;
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-bottom: 48px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
 }
 .stat-cell {
-  padding: 22px 24px;
-  position: relative;
-  text-align: center;
-  border-right: 1px solid var(--rule);
+    padding: 22px 24px;
+    text-align: center;
+    border-right: 1px solid var(--rule);
 }
 .stat-cell:last-child { border-right: none; }
 .stat-cell .sc-num {
-  font-family: var(--serif);
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 400;
-  color: var(--text);
-  margin-bottom: 6px;
-  font-variant-numeric: tabular-nums;
+    font-family: var(--serif);
+    font-size: 32px;
+    line-height: 1;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
 }
 .stat-cell .sc-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-mute);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mute);
 }
 
-/* Question card */
-.question-card {
-    background: transparent;
+/* ── Stat grid (3-col for flashcards header) ── */
+.stat-grid {
+    display: grid;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
-    padding: 1rem 0 2rem;
-    margin: 1.2rem 0 1.8rem;
+}
+.stat-card {
+    padding: 1.4rem 1.5rem;
+    text-align: center;
+    border-right: 1px solid var(--rule);
+}
+.stat-card:last-child { border-right: none; }
+.stat-value {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 6px;
+}
+.stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+}
+
+/* ── Score result display ── */
+.score-big {
+    font-family: var(--serif);
+    font-size: clamp(64px, 12vw, 104px);
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+    margin: 2rem auto 0.5rem;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    display: block;
+}
+.score-green { color: var(--ok); }
+.score-yellow { color: var(--amber-deep); }
+.score-red { color: var(--err); }
+.score-caption {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 2.5rem;
+}
+
+/* ── Empty state card ── */
+.glass-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    box-shadow: var(--shadow-sm);
+}
+.glass-card > span { color: var(--text-dim) !important; font-family: var(--sans) !important; }
+
+/* ── Question card ── */
+.question-card {
+    border-bottom: 1px solid var(--rule);
+    padding: 0.75rem 0 2rem;
+    margin: 1rem 0 1.8rem;
 }
 .question-text {
     font-family: var(--serif);
@@ -206,70 +303,78 @@ em { font-style: italic; color: var(--amber-deep); }
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--amber-deep);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     background: none !important;
     border: none !important;
     padding: 0 !important;
 }
 
-/* Options / Buttons */
+/* ── Buttons ── */
 .stButton > button {
-  background: transparent !important;
-  border: 1px solid var(--rule) !important;
-  color: var(--text) !important;
-  border-radius: 2px !important;
-  font-family: var(--sans);
-  font-size: 15px !important;
-  font-weight: 500 !important;
-  padding: 18px 24px !important;
-  transition: all 0.2s var(--ease) !important;
+    background: transparent !important;
+    border: 1px solid var(--rule) !important;
+    color: var(--text) !important;
+    border-radius: 2px !important;
+    font-family: var(--sans);
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    padding: 16px 22px !important;
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease) !important;
+    width: 100%;
 }
 .stButton > button:hover {
-  background: color-mix(in oklab, var(--amber-soft) 20%, transparent) !important;
-  border-color: var(--amber) !important;
-  transform: none;
-  box-shadow: none !important;
+    background: oklch(88% 0.07 75 / 20%) !important;
+    border-color: var(--amber) !important;
+    box-shadow: none !important;
 }
 .stButton > button[kind="primary"] {
-  background: var(--ink-900) !important;
-  color: var(--ink-50) !important;
-  text-transform: uppercase;
-  font-family: var(--sans);
-  letter-spacing: 0.04em;
-  font-size: 14px !important;
-  box-shadow: var(--shadow-sm) !important;
-  border: none !important;
+    background: var(--ink-900) !important;
+    color: oklch(97.5% 0.006 80) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 13px !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: none !important;
 }
 .stButton > button[kind="primary"]:hover {
-  background: var(--ink-800) !important;
-  transform: translateY(-1px);
+    background: var(--ink-700) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md) !important;
 }
 
-/* Answers */
+/* ── Answers feedback ── */
 .correct-answer {
     background: var(--ok-soft) !important;
     border: 1px solid var(--ok) !important;
-    border-left: 2px solid var(--ok) !important;
-    border-radius: 2px; padding: 1.1rem 1.5rem;
-    color: var(--ok); font-weight: 500; font-family: var(--sans);
-    margin: 0.5rem 0;
+    border-left: 3px solid var(--ok) !important;
+    border-radius: 2px;
+    padding: 1rem 1.4rem;
+    color: var(--ok);
+    font-weight: 500;
+    font-family: var(--sans);
+    margin: 0.4rem 0;
 }
 .wrong-answer {
     background: var(--err-soft) !important;
     border: 1px solid var(--err) !important;
-    border-left: 2px solid var(--err) !important;
-    border-radius: 2px; padding: 1.1rem 1.5rem;
-    color: var(--err); font-weight: 500; font-family: var(--sans);
-    margin: 0.5rem 0;
+    border-left: 3px solid var(--err) !important;
+    border-radius: 2px;
+    padding: 1rem 1.4rem;
+    color: var(--err);
+    font-weight: 500;
+    font-family: var(--sans);
+    margin: 0.4rem 0;
 }
 .neutral-answer {
     background: var(--paper);
     border: 1px solid var(--rule);
-    border-radius: 2px; padding: 1.1rem 1.5rem;
-    color: var(--text-dim); margin: 0.5rem 0;
+    border-radius: 2px;
+    padding: 1rem 1.4rem;
+    color: var(--text-dim);
+    margin: 0.4rem 0;
 }
 
-/* Flashcard */
+/* ── Flashcard ── */
 .flashcard {
     background: var(--paper);
     border: 1px solid var(--rule);
@@ -277,49 +382,68 @@ em { font-style: italic; color: var(--amber-deep); }
     padding: 4rem 3rem;
     text-align: center;
     min-height: 250px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: var(--shadow-sm);
     margin: 2rem auto;
     max-width: 600px;
 }
 .flashcard::before, .flashcard::after { display: none !important; }
-.flashcard-front { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--text); line-height: 1.3; }
+.flashcard-front {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.3;
+}
 .flashcard-back {
-    font-family: var(--serif); font-size: 24px; font-weight: 500; color: var(--ok); line-height: 1.4;
-    background: transparent; border-top: 1px solid var(--rule); padding-top: 20px; margin-top: 20px;
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--ok);
+    line-height: 1.4;
 }
-.flashcard-back::after { content: ''; }
 
-/* Form Controls */
-.stSelectbox > div > div {
-    background: transparent !important;
-    border-color: var(--rule) !important;
-    border-radius: 2px !important;
-    font-family: var(--serif) !important;
-    font-size: 18px !important;
-    color: var(--text) !important;
-}
-[data-testid="stWidgetLabel"] {
-    font-family: var(--serif) !important;
-    font-size: 17px !important;
-    color: var(--text) !important;
-}
-.stCheckbox, .stRadio { color: var(--text) !important; font-family: var(--sans) !important; }
-
-/* Progress & Session Rows */
+/* ── Progress bar ── */
 .stProgress > div > div { background: var(--amber-deep) !important; border-radius: 0; }
 .stProgress > div { background: var(--rule) !important; border-radius: 0; height: 3px !important; }
+
+/* ── Session history row ── */
 .session-row {
     background: var(--paper);
     border: 1px solid var(--rule);
     border-radius: 2px;
-    padding: 1.2rem 1.4rem;
-    margin: 0.5rem 0;
-    font-family: var(--sans); font-size: 14px;
+    padding: 1rem 1.4rem;
+    margin: 0.4rem 0;
+    font-family: var(--sans);
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
 }
-.session-row b { font-family: var(--serif); font-size: 18px; color: var(--text); }
+.session-row b { font-family: var(--serif); font-size: 17px; color: var(--text); }
 
-/* Metrics */
+/* ── Form Controls ── */
+.stSelectbox > div > div {
+    background: transparent !important;
+    border-color: var(--rule) !important;
+    border-radius: 2px !important;
+    font-family: var(--sans) !important;
+    font-size: 15px !important;
+    color: var(--text) !important;
+}
+[data-testid="stWidgetLabel"] {
+    font-family: var(--mono) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    color: var(--text-mute) !important;
+}
+.stCheckbox, .stRadio { color: var(--text) !important; font-family: var(--sans) !important; }
+
+/* ── Metrics ── */
 [data-testid="stMetricValue"] {
     font-family: var(--serif) !important;
     color: var(--text) !important;
@@ -329,8 +453,16 @@ em { font-style: italic; color: var(--amber-deep); }
 [data-testid="stMetricLabel"] {
     font-family: var(--mono) !important;
     color: var(--text-mute) !important;
-    text-transform: uppercase; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px !important;
 }
+
+/* ── Info/alert override ── */
+.stAlert { border-radius: 2px !important; border-left-width: 2px !important; font-family: var(--sans) !important; }
+
+/* ── Dataframe ── */
+[data-testid="stDataFrame"] { border: 1px solid var(--rule) !important; border-radius: 2px !important; }
 </style>
 
 """, unsafe_allow_html=True)
@@ -391,29 +523,28 @@ def build_q_map():
 # ============================================================
 def render_sidebar(qcm_data, fc_data):
     with st.sidebar:
+        # Wordmark
         st.markdown(
-            '<div style="text-align:center;padding:1.5rem 0 0.5rem;">'
-            '<div style="width:60px;height:60px;margin:0 auto 0.8rem;'
-            'border-radius:16px;background:var(--bg);'
-            'border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;'
-            'box-shadow:0 4px 16px rgba(102,126,234,0.1);">'
-            '<span style="font-size:1.8rem;">✈️</span></div>'
-            '<span style="font-size:1.15rem;font-weight:800;'
-            'background:linear-gradient(135deg,#818cf8,#c084fc);'
-            '-webkit-background-clip:text;-webkit-text-fill-color:transparent;'
-            'letter-spacing:-0.02em;">PSY0 Training</span><br>'
-            '<span style="font-size:0.7rem;color:rgba(255,255,255,0.2);letter-spacing:0.1em;">'
-            'AIR FRANCE</span></div>', unsafe_allow_html=True)
-        
+            '<div style="padding:1.5rem 0.5rem 1rem;">'
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
+            '<span style="font-size:1.5rem;">✈️</span>'
+            '<span style="font-family:\'Newsreader\',Georgia,serif;font-size:1.15rem;'
+            'font-style:italic;color:var(--ink-900);letter-spacing:-0.01em;">PSY0 Training</span>'
+            '</div>'
+            '<span style="font-family:\'Geist Mono\',monospace;font-size:9px;'
+            'letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-400);">'
+            'AIR FRANCE</span></div>',
+            unsafe_allow_html=True)
+
         st.markdown("---")
-        
+
         page = st.radio(
-            "nav", ["🏠 Accueil", "📝 QCM", "🃏 Flashcards", "📊 Analytics"],
+            "nav", ["🏠 Accueil", "📝 QCM", "🃏 Flashcards", "📊 Analytics", "🌍 Géographie"],
             label_visibility="collapsed",
         )
-        
+
         st.markdown("---")
-        
+
         if "current_profile" not in st.session_state:
             st.session_state.current_profile = "Maxime"
 
@@ -422,15 +553,17 @@ def render_sidebar(qcm_data, fc_data):
             all_profiles.insert(0, st.session_state.current_profile)
 
         profil_actuel = st.selectbox(
-            "👤 Profil", all_profiles,
+            "Profil", all_profiles,
             index=all_profiles.index(st.session_state.current_profile),
         )
         if profil_actuel != st.session_state.current_profile:
             st.session_state.current_profile = profil_actuel
             st.rerun()
 
-        new_name = st.text_input("✏️ Nouveau profil", placeholder="Prénom...",
-                                 label_visibility="collapsed", key="new_profile_input")
+        new_name = st.text_input(
+            "Nouveau profil", placeholder="Prénom...",
+            label_visibility="collapsed", key="new_profile_input"
+        )
         if st.button("+ Créer profil", use_container_width=True) and new_name.strip():
             name = new_name.strip().title()
             path = get_user_data_path(name)
@@ -441,24 +574,35 @@ def render_sidebar(qcm_data, fc_data):
             st.rerun()
 
         st.markdown("---")
-        
+
+        # Sidebar stats — visible only if sessions exist
         user_data = load_user_data()
         sessions = user_data.get("sessions", [])
         if sessions:
             total_q = sum(s["total"] for s in sessions)
-            avg = sum(s["score"]/s["total"] for s in sessions) / len(sessions) * 100
+            avg = sum(s["score"] / s["total"] for s in sessions) / len(sessions) * 100
+            avg_color = "var(--ok)" if avg >= 70 else "var(--amber-deep)" if avg >= 50 else "var(--err)"
             st.markdown(
-                f'<div style="text-align:center;padding:0.5rem 0;">'
-                f'<div style="font-size:1.6rem;font-weight:800;color:var(--text);">{avg:.0f}%</div>'
-                f'<div style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-top:0.2rem;">'
-                f'{len(sessions)} sessions · {total_q} questions</div></div>',
+                f'<div style="padding:0.75rem 0.5rem 0.5rem;">'
+                f'<div style="font-family:\'Newsreader\',Georgia,serif;'
+                f'font-size:2rem;font-weight:400;color:{avg_color};'
+                f'line-height:1;font-variant-numeric:tabular-nums;">{avg:.0f}%</div>'
+                f'<div style="font-family:\'Geist Mono\',monospace;font-size:9px;'
+                f'letter-spacing:0.18em;text-transform:uppercase;'
+                f'color:var(--ink-400);margin-top:4px;">'
+                f'{len(sessions)} sessions · {total_q} Q</div></div>',
                 unsafe_allow_html=True
             )
-        
+
+        # Version footer
         st.markdown(
-            f"<div style='position:fixed;bottom:1rem;left:1rem;opacity:0.2;font-size:0.65rem;letter-spacing:0.05em;'>"
-            f"v4.0 · {len(qcm_data)} QCM · {len(fc_data)} FC</div>", unsafe_allow_html=True)
-    
+            f"<div style='margin-top:1rem;font-family:\"Geist Mono\",monospace;"
+            f"font-size:9px;letter-spacing:0.12em;color:var(--ink-300);"
+            f"text-transform:uppercase;'>"
+            f"v4.0 · {len(qcm_data)} QCM · {len(fc_data)} FC</div>",
+            unsafe_allow_html=True
+        )
+
     return page
 
 
@@ -737,13 +881,16 @@ def finish_qcm():
 def render_qcm_summary():
     s = st.session_state.qcm_session_result
     pct = s["score"] / s["total"] * 100
-    
-    st.markdown("### 🛬 Bilan du vol")
+
     color_cls = "score-green" if pct >= 80 else "score-yellow" if pct >= 60 else "score-red"
-    st.markdown(f'<div class="score-big {color_cls}">{pct:.0f}%</div>'
-                f'<p style="text-align:center;color:rgba(255,255,255,0.5);font-size:1.1rem">'
-                f'{s["score"]} / {s["total"]} bonnes réponses · {s["duration_seconds"]//60}m{s["duration_seconds"]%60}s</p>',
-                unsafe_allow_html=True)
+    dur = s["duration_seconds"]
+    st.markdown(
+        f'<div class="eyebrow">Bilan du vol</div>'
+        f'<div class="score-big {color_cls}">{pct:.0f}%</div>'
+        f'<div class="score-caption">{s["score"]} / {s["total"]} bonnes réponses'
+        f' &nbsp;·&nbsp; {dur // 60}m{dur % 60}s</div>',
+        unsafe_allow_html=True
+    )
     
     # Category breakdown
     q_map = build_q_map()
@@ -901,20 +1048,22 @@ def render_fc_summary():
     known = st.session_state.fc_known
     total = len(st.session_state.fc_cards)
     pct = known / total * 100 if total else 0
-    
-    st.markdown("### 🃏 Session terminée !")
+
     color_cls = "score-green" if pct >= 80 else "score-yellow" if pct >= 60 else "score-red"
-    st.markdown(f'<div class="score-big {color_cls}">{pct:.0f}%</div>'
-                f'<p style="text-align:center;color:rgba(255,255,255,0.5)">'
-                f'{known} / {total} cartes maîtrisées</p>', unsafe_allow_html=True)
-    
+    st.markdown(
+        f'<div class="eyebrow">Session terminée</div>'
+        f'<div class="score-big {color_cls}">{pct:.0f}%</div>'
+        f'<div class="score-caption">{known} / {total} cartes maîtrisées</div>',
+        unsafe_allow_html=True
+    )
+
     user_data = load_user_data()
     mastery = user_data.get("flashcard_mastery", {})
     _, fc_data = load_questions_safe()
     total_known = sum(1 for v in mastery.values() if v.get("status") == "known")
     overall = total_known / len(fc_data) * 100 if fc_data else 0
-    st.progress(overall / 100, text=f"Maîtrise globale: {total_known}/{len(fc_data)} ({overall:.1f}%)")
-    
+    st.progress(overall / 100, text=f"Maîtrise globale : {total_known}/{len(fc_data)} ({overall:.1f}%)")
+
     st.markdown("")
     if st.button("🔄 Nouvelle session", type="primary", use_container_width=True):
         st.session_state.fc_active = False
@@ -928,53 +1077,63 @@ def render_fc_summary():
 def page_analytics():
     st.markdown(
         '<div class="hero-section">'
-        '<div class="hero-title">📊 Analytics</div>'
-        '<div class="hero-subtitle">Analysez vos performances en profondeur</div>'
-        '<div class="hero-divider"></div></div>',
+        '<div class="eyebrow">Tableau de bord</div>'
+        '<div class="hero-title">Analyse <em>des performances</em>.</div>'
+        '<p class="hero-subtitle">Identifiez vos points forts et les catégories à renforcer.</p>'
+        '</div>',
         unsafe_allow_html=True)
-    
+
     user_data = load_user_data()
     sessions = user_data.get("sessions", [])
-    
+
     if not sessions:
-        st.markdown('<div class="glass-card" style="text-align:center;padding:3rem">'
-                    '<span style="font-size:3rem">🎯</span><br><br>'
-                    '<span style="font-size:1.1rem;color:rgba(255,255,255,0.5)">'
-                    'Complétez au moins un quiz pour voir vos statistiques.</span></div>',
-                    unsafe_allow_html=True)
+        st.markdown(
+            '<div class="glass-card" style="text-align:center;padding:4rem 2rem;">'
+            '<div style="font-size:2.5rem;margin-bottom:1rem;">🎯</div>'
+            '<div style="font-family:\'Newsreader\',serif;font-size:1.3rem;'
+            'color:var(--text-dim);">Complétez au moins un quiz<br>pour voir vos statistiques.</div>'
+            '</div>',
+            unsafe_allow_html=True
+        )
         return
-    
+
     _, fc_data = load_questions_safe()
     q_map = build_q_map()
 
+    # Plot layout adapté au fond clair
     plot_layout = dict(
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='rgba(255,255,255,0.7)', family='Inter'),
+        font=dict(color='rgba(14,22,40,0.65)', family='Geist, sans-serif'),
         margin=dict(l=40, r=20, t=40, b=40),
     )
     
     # 1. PROGRESSION
-    st.markdown("### 📈 Progression")
+    st.markdown('<div class="section-label">Progression</div>', unsafe_allow_html=True)
     df = pd.DataFrame([{
-        "Session": i + 1, "Score (%)": s["score"] / s["total"] * 100,
+        "Session": i + 1,
+        "Score (%)": s["score"] / s["total"] * 100,
         "Date": s.get("date", "")[:10],
     } for i, s in enumerate(sessions)])
-    
+
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=df["Session"], y=df["Score (%)"],
         mode='lines+markers',
-        line=dict(color='#a78bfa', width=3),
-        marker=dict(size=8, color='#667eea', line=dict(width=2, color='#a78bfa')),
-        fill='tozeroy', fillcolor='rgba(102,126,234,0.08)',
+        line=dict(color='oklch(58% 0.12 55)', width=2.5),
+        marker=dict(size=7, color='oklch(58% 0.12 55)', line=dict(width=2, color='white')),
+        fill='tozeroy', fillcolor='rgba(147,97,53,0.08)',
     ))
-    fig.add_hline(y=80, line_dash="dash", line_color="rgba(72,187,120,0.4)",
-                  annotation_text="Objectif 80%", annotation_font_color="rgba(72,187,120,0.6)")
-    fig.update_layout(**plot_layout, height=350, yaxis_range=[0, 105],
-                      xaxis_title="Session #", yaxis_title="Score (%)",
-                      xaxis=dict(gridcolor='rgba(255,255,255,0.04)'),
-                      yaxis=dict(gridcolor='rgba(255,255,255,0.04)'))
+    fig.add_hline(y=80, line_dash="dot", line_color="rgba(59,161,109,0.5)",
+                  annotation_text="Objectif 80%",
+                  annotation_font_color="rgba(59,161,109,0.75)",
+                  annotation_font_size=11)
+    fig.update_layout(
+        **plot_layout, height=340, yaxis_range=[0, 105],
+        xaxis_title="Session", yaxis_title="Score (%)",
+        xaxis=dict(gridcolor='rgba(14,22,40,0.06)', zeroline=False),
+        yaxis=dict(gridcolor='rgba(14,22,40,0.06)', zeroline=False),
+    )
     st.plotly_chart(fig, use_container_width=True)
     
     # 2. RADAR + TIME
@@ -991,41 +1150,56 @@ def page_analytics():
             cat_stats[cat]["times"].append(a.get("time_ms", 0))
     
     with col1:
-        st.markdown("### 🎯 Réussite par catégorie")
+        st.markdown('<div class="section-label">Réussite par catégorie</div>', unsafe_allow_html=True)
         if cat_stats:
-            cats = list(cat_stats.keys())
-            vals = [cat_stats[c]["c"] / cat_stats[c]["t"] * 100 for c in cats]
+            cats_r = list(cat_stats.keys())
+            vals_r = [cat_stats[c]["c"] / cat_stats[c]["t"] * 100 for c in cats_r]
             fig_r = go.Figure(data=go.Scatterpolar(
-                r=vals + [vals[0]], theta=cats + [cats[0]],
-                fill='toself', fillcolor='rgba(167,139,250,0.15)',
-                line=dict(color='#a78bfa', width=2),
-                marker=dict(size=6, color='#667eea'),
+                r=vals_r + [vals_r[0]], theta=cats_r + [cats_r[0]],
+                fill='toself', fillcolor='rgba(147,97,53,0.10)',
+                line=dict(color='oklch(58% 0.12 55)', width=2),
+                marker=dict(size=5, color='oklch(58% 0.12 55)'),
             ))
-            fig_r.update_layout(**plot_layout, height=380,
-                                polar=dict(
-                                    radialaxis=dict(visible=True, range=[0, 100], ticksuffix="%",
-                                                    gridcolor='rgba(255,255,255,0.06)',
-                                                    color='rgba(255,255,255,0.3)'),
-                                    angularaxis=dict(gridcolor='rgba(255,255,255,0.06)'),
-                                    bgcolor='rgba(0,0,0,0)',
-                                ), showlegend=False)
+            fig_r.update_layout(
+                **plot_layout, height=360,
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True, range=[0, 100], ticksuffix="%",
+                        gridcolor='rgba(14,22,40,0.08)',
+                        color='rgba(14,22,40,0.45)',
+                        tickfont=dict(size=9),
+                    ),
+                    angularaxis=dict(
+                        gridcolor='rgba(14,22,40,0.08)',
+                        tickfont=dict(size=10),
+                    ),
+                    bgcolor='rgba(0,0,0,0)',
+                ),
+                showlegend=False,
+            )
             st.plotly_chart(fig_r, use_container_width=True)
-    
+
     with col2:
-        st.markdown("### ⏱ Temps moyen / catégorie")
+        st.markdown('<div class="section-label">Temps moyen / catégorie</div>', unsafe_allow_html=True)
         time_data = []
         for cat, cs in cat_stats.items():
             valid = [t for t in cs["times"] if t > 0]
-            if valid: time_data.append({"Catégorie": cat, "Temps (s)": round(sum(valid)/len(valid)/1000, 1)})
+            if valid:
+                time_data.append({"Catégorie": cat, "Temps (s)": round(sum(valid) / len(valid) / 1000, 1)})
         if time_data:
             df_t = pd.DataFrame(time_data).sort_values("Temps (s)")
-            fig_t = px.bar(df_t, x="Temps (s)", y="Catégorie", orientation='h',
-                           color="Temps (s)", color_continuous_scale=["#48bb78", "#ecc94b", "#fc8181"])
-            fig_t.update_layout(**plot_layout, height=380, showlegend=False, coloraxis_showscale=False)
+            fig_t = px.bar(
+                df_t, x="Temps (s)", y="Catégorie", orientation='h',
+                color="Temps (s)",
+                color_continuous_scale=["oklch(62% 0.12 160)", "oklch(74% 0.14 72)", "oklch(58% 0.17 25)"]
+            )
+            fig_t.update_layout(**plot_layout, height=360, showlegend=False, coloraxis_showscale=False,
+                                xaxis=dict(gridcolor='rgba(14,22,40,0.06)'),
+                                yaxis=dict(gridcolor='rgba(14,22,40,0.06)'))
             st.plotly_chart(fig_t, use_container_width=True)
     
     # 3. TOP FAILED
-    st.markdown("### ❌ Top questions les plus ratées")
+    st.markdown('<div class="section-label">Top questions les plus ratées</div>', unsafe_allow_html=True)
     q_fails = {}
     for s in sessions:
         for a in s.get("answers", []):
@@ -1053,7 +1227,7 @@ def page_analytics():
     
     # 4. FLASHCARD MASTERY
     st.markdown("---")
-    st.markdown("### 🃏 Maîtrise flashcards")
+    st.markdown('<div class="section-label">Maîtrise flashcards</div>', unsafe_allow_html=True)
     mastery = user_data.get("flashcard_mastery", {})
     fc_cats = {}
     for f in fc_data:
@@ -1071,7 +1245,7 @@ def page_analytics():
     
     # 5. SESSION HISTORY
     st.markdown("---")
-    st.markdown("### 📋 Historique des sessions")
+    st.markdown('<div class="section-label">Historique des sessions</div>', unsafe_allow_html=True)
     rows = []
     for s in sessions[::-1]:
         p = s["score"] / s["total"] * 100
@@ -1093,6 +1267,27 @@ def page_analytics():
 
 
 # ============================================================
+# PAGE: GÉOGRAPHIE (Capitales, Drapeaux, Cartes)
+# ============================================================
+def page_geographie():
+    html_path = Path(BASE_DIR) / "Capitale" / "Drapeau" / "index.html"
+
+    if not html_path.exists():
+        st.markdown(
+            '<div class="glass-card" style="text-align:center;padding:4rem 2rem;">'
+            '<div style="font-size:2.5rem;margin-bottom:1rem;">⚠️</div>'
+            '<div style="font-family:\'Newsreader\',serif;font-size:1.2rem;color:var(--text-dim);">'
+            f'Fichier introuvable :<br><code>{html_path}</code></div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    html_content = html_path.read_text(encoding="utf-8")
+    st.components.v1.html(html_content, height=960, scrolling=True)
+
+
+# ============================================================
 # MAIN
 # ============================================================
 def main():
@@ -1103,6 +1298,7 @@ def main():
     elif page == "📝 QCM": page_qcm(qcm_data)
     elif page == "🃏 Flashcards": page_flashcards(fc_data)
     elif page == "📊 Analytics": page_analytics()
+    elif page == "🌍 Géographie": page_geographie()
 
 if __name__ == "__main__":
     main()
