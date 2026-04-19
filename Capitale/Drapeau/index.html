@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Révision — Capitales & Drapeaux du Monde</title>
+  <meta name="description"
+    content="Application interactive pour réviser les capitales et drapeaux des pays du monde. Quiz, flashcards et filtrage par continent.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #111827;
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface-hover: rgba(255, 255, 255, 0.08);
+      --glass: rgba(255, 255, 255, 0.06);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text: #f1f5f9;
+      --text-dim: #94a3b8;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --green: #22c55e;
+      --green-glow: rgba(34, 197, 94, 0.25);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.25);
+      --orange: #f59e0b;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 600px 400px at 20% 10%, rgba(99, 102, 241, 0.12), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(139, 92, 246, 0.08), transparent),
+        radial-gradient(ellipse 400px 300px at 50% 50%, rgba(34, 197, 94, 0.05), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 40px 0 32px;
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #818cf8, #6366f1, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+    }
+
+    header p {
+      color: var(--text-dim);
+      margin-top: 8px;
+      font-size: 1.05rem;
+    }
+
+    /* Mode selector */
+    .mode-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .mode-btn {
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text-dim);
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .mode-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* Continent filter */
+    .filter-bar {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text-dim);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .filter-btn.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--accent);
+      color: #818cf8;
+    }
+
+    /* Glass card */
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 40px 32px;
+      text-align: center;
+      animation: fadeUp 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Flag */
+    .flag-container {
+      margin: 0 auto 24px;
+      width: 200px;
+      height: 140px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg2);
+    }
+
+    .flag-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+
+    .flag-container:hover img {
+      transform: scale(1.05);
+    }
+
+    .flag-large {
+      width: 260px;
+      height: 180px;
+    }
+
+    /* Country name */
+    .country-name {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .capital-name {
+      font-size: 1.2rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .capital-reveal {
+      cursor: pointer;
+      padding: 12px 28px;
+      border-radius: 50px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818cf8;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.25s;
+      margin-top: 12px;
+      display: inline-block;
+    }
+
+    .capital-reveal:hover {
+      background: rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .capital-revealed {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #818cf8;
+      margin-top: 12px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    /* Navigation */
+    .nav-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      margin-top: 28px;
+    }
+
+    .nav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text);
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--surface-hover);
+      transform: scale(1.1);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+      transform: none;
+    }
+
+    .nav-counter {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Quiz options */
+    .quiz-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .quiz-opt {
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .quiz-opt:hover:not(.disabled) {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .quiz-opt.correct {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: var(--green);
+      color: var(--green);
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+
+    .quiz-opt.wrong {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: var(--red);
+      color: var(--red);
+      box-shadow: 0 0 20px var(--red-glow);
+    }
+
+    .quiz-opt.disabled {
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    /* Flag quiz grid */
+    .flag-quiz-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .flag-quiz-opt {
+      background: var(--surface);
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .flag-quiz-opt:hover:not(.disabled) {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+      background: var(--surface-hover);
+    }
+
+    .flag-quiz-opt img {
+      width: 100px;
+      height: 66px;
+      object-fit: cover;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .flag-quiz-opt span {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text-dim);
+    }
+
+    .flag-quiz-opt.correct {
+      border-color: var(--green);
+      background: rgba(34, 197, 94, 0.1);
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+
+    .flag-quiz-opt.correct span {
+      color: var(--green);
+    }
+
+    .flag-quiz-opt.wrong {
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
+      box-shadow: 0 0 20px var(--red-glow);
+    }
+
+    .flag-quiz-opt.wrong span {
+      color: var(--red);
+    }
+
+    .flag-quiz-opt.disabled {
+      cursor: default;
+    }
+
+    /* Score bar */
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 14px 20px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+    }
+
+    .score-text {
+      font-weight: 700;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #a78bfa);
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+
+    .score-pct {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      min-width: 42px;
+      text-align: right;
+    }
+
+    /* Next button */
+    .next-btn {
+      margin-top: 20px;
+      padding: 12px 32px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    /* Feedback */
+    .feedback {
+      margin-top: 16px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .feedback.correct-fb {
+      color: var(--green);
+    }
+
+    .feedback.wrong-fb {
+      color: var(--red);
+    }
+
+    /* End screen */
+    .end-screen {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .end-score {
+      font-size: 4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #818cf8, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .end-label {
+      color: var(--text-dim);
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+
+    .restart-btn {
+      margin-top: 28px;
+      padding: 14px 40px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .restart-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    /* Responsive */
+    @media(max-width:600px) {
+      header h1 {
+        font-size: 1.7rem;
+      }
+
+      .card {
+        padding: 28px 18px;
+      }
+
+      .quiz-options,
+      .flag-quiz-options {
+        grid-template-columns: 1fr;
+      }
+
+      .flag-container {
+        width: 160px;
+        height: 110px;
+      }
+
+      .flag-large {
+        width: 200px;
+        height: 140px;
+      }
+    }
+
+    /* Shuffle indicator */
+    .shuffle-indicator {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+    }
+
+    /* Section toggle */
+    .section-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .section-btn {
+      background: var(--surface);
+      border: 2px solid var(--glass-border);
+      color: var(--text-dim);
+      padding: 12px 28px;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .section-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .section-btn.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.15));
+      border-color: var(--accent);
+      color: #818cf8;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .question-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .question-sub {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+
+    /* Map */
+    .map-wrapper {
+      width: 100%;
+      height: 340px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin: 0 auto 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--glass-border);
+    }
+
+    .map-wrapper .leaflet-container {
+      background: #1a1f2e;
+    }
+
+    @media(max-width:600px) {
+      .map-wrapper {
+        height: 240px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <h1>🌍 Révision Géographie</h1>
+      <p>Capitales, drapeaux, montagnes, fleuves, mers & océans</p>
+    </header>
+
+    <!-- Section toggle -->
+    <div class="section-bar">
+      <button class="section-btn active" data-section="pays">🏛️ Pays & Capitales</button>
+      <button class="section-btn" data-section="geo">⛰️ Géographie</button>
+    </div>
+
+    <!-- Mode selector -->
+    <div class="mode-bar" id="mode-bar"></div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar"></div>
+
+    <!-- Main content area -->
+    <div id="main-content"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ===== DATA =====
+    const ALL_COUNTRIES = [
+      // EUROPE
+      { name: "France", capital: "Paris", code: "fr", continent: "Europe" },
+      { name: "Allemagne", capital: "Berlin", code: "de", continent: "Europe" },
+      { name: "Espagne", capital: "Madrid", code: "es", continent: "Europe" },
+      { name: "Italie", capital: "Rome", code: "it", continent: "Europe" },
+      { name: "Portugal", capital: "Lisbonne", code: "pt", continent: "Europe" },
+      { name: "Royaume-Uni", capital: "Londres", code: "gb", continent: "Europe" },
+      { name: "Irlande", capital: "Dublin", code: "ie", continent: "Europe" },
+      { name: "Belgique", capital: "Bruxelles", code: "be", continent: "Europe" },
+      { name: "Pays-Bas", capital: "Amsterdam", code: "nl", continent: "Europe" },
+      { name: "Luxembourg", capital: "Luxembourg", code: "lu", continent: "Europe" },
+      { name: "Suisse", capital: "Berne", code: "ch", continent: "Europe" },
+      { name: "Autriche", capital: "Vienne", code: "at", continent: "Europe" },
+      { name: "Pologne", capital: "Varsovie", code: "pl", continent: "Europe" },
+      { name: "Tchéquie", capital: "Prague", code: "cz", continent: "Europe" },
+      { name: "Slovaquie", capital: "Bratislava", code: "sk", continent: "Europe" },
+      { name: "Hongrie", capital: "Budapest", code: "hu", continent: "Europe" },
+      { name: "Roumanie", capital: "Bucarest", code: "ro", continent: "Europe" },
+      { name: "Bulgarie", capital: "Sofia", code: "bg", continent: "Europe" },
+      { name: "Grèce", capital: "Athènes", code: "gr", continent: "Europe" },
+      { name: "Croatie", capital: "Zagreb", code: "hr", continent: "Europe" },
+      { name: "Serbie", capital: "Belgrade", code: "rs", continent: "Europe" },
+      { name: "Slovénie", capital: "Ljubljana", code: "si", continent: "Europe" },
+      { name: "Bosnie-Herzégovine", capital: "Sarajevo", code: "ba", continent: "Europe" },
+      { name: "Monténégro", capital: "Podgorica", code: "me", continent: "Europe" },
+      { name: "Macédoine du Nord", capital: "Skopje", code: "mk", continent: "Europe" },
+      { name: "Albanie", capital: "Tirana", code: "al", continent: "Europe" },
+      { name: "Kosovo", capital: "Pristina", code: "xk", continent: "Europe" },
+      { name: "Danemark", capital: "Copenhague", code: "dk", continent: "Europe" },
+      { name: "Suède", capital: "Stockholm", code: "se", continent: "Europe" },
+      { name: "Norvège", capital: "Oslo", code: "no", continent: "Europe" },
+      { name: "Finlande", capital: "Helsinki", code: "fi", continent: "Europe" },
+      { name: "Islande", capital: "Reykjavik", code: "is", continent: "Europe" },
+      { name: "Estonie", capital: "Tallinn", code: "ee", continent: "Europe" },
+      { name: "Lettonie", capital: "Riga", code: "lv", continent: "Europe" },
+      { name: "Lituanie", capital: "Vilnius", code: "lt", continent: "Europe" },
+      { name: "Ukraine", capital: "Kiev", code: "ua", continent: "Europe" },
+      { name: "Biélorussie", capital: "Minsk", code: "by", continent: "Europe" },
+      { name: "Moldavie", capital: "Chișinău", code: "md", continent: "Europe" },
+      { name: "Russie", capital: "Moscou", code: "ru", continent: "Europe" },
+      { name: "Turquie", capital: "Ankara", code: "tr", continent: "Europe" },
+      { name: "Chypre", capital: "Nicosie", code: "cy", continent: "Europe" },
+      { name: "Malte", capital: "La Valette", code: "mt", continent: "Europe" },
+      { name: "Andorre", capital: "Andorre-la-Vieille", code: "ad", continent: "Europe" },
+      { name: "Monaco", capital: "Monaco", code: "mc", continent: "Europe" },
+      { name: "Saint-Marin", capital: "Saint-Marin", code: "sm", continent: "Europe" },
+      { name: "Liechtenstein", capital: "Vaduz", code: "li", continent: "Europe" },
+      { name: "Vatican", capital: "Cité du Vatican", code: "va", continent: "Europe" },
+      // AFRIQUE
+      { name: "Maroc", capital: "Rabat", code: "ma", continent: "Afrique" },
+      { name: "Algérie", capital: "Alger", code: "dz", continent: "Afrique" },
+      { name: "Tunisie", capital: "Tunis", code: "tn", continent: "Afrique" },
+      { name: "Libye", capital: "Tripoli", code: "ly", continent: "Afrique" },
+      { name: "Égypte", capital: "Le Caire", code: "eg", continent: "Afrique" },
+      { name: "Mauritanie", capital: "Nouakchott", code: "mr", continent: "Afrique" },
+      { name: "Mali", capital: "Bamako", code: "ml", continent: "Afrique" },
+      { name: "Niger", capital: "Niamey", code: "ne", continent: "Afrique" },
+      { name: "Tchad", capital: "N'Djamena", code: "td", continent: "Afrique" },
+      { name: "Soudan", capital: "Khartoum", code: "sd", continent: "Afrique" },
+      { name: "Sénégal", capital: "Dakar", code: "sn", continent: "Afrique" },
+      { name: "Gambie", capital: "Banjul", code: "gm", continent: "Afrique" },
+      { name: "Guinée-Bissau", capital: "Bissau", code: "gw", continent: "Afrique" },
+      { name: "Guinée", capital: "Conakry", code: "gn", continent: "Afrique" },
+      { name: "Sierra Leone", capital: "Freetown", code: "sl", continent: "Afrique" },
+      { name: "Liberia", capital: "Monrovia", code: "lr", continent: "Afrique" },
+      { name: "Côte d'Ivoire", capital: "Yamoussoukro", code: "ci", continent: "Afrique" },
+      { name: "Burkina Faso", capital: "Ouagadougou", code: "bf", continent: "Afrique" },
+      { name: "Ghana", capital: "Accra", code: "gh", continent: "Afrique" },
+      { name: "Togo", capital: "Lomé", code: "tg", continent: "Afrique" },
+      { name: "Bénin", capital: "Porto-Novo", code: "bj", continent: "Afrique" },
+      { name: "Nigeria", capital: "Abuja", code: "ng", continent: "Afrique" },
+      { name: "Cameroun", capital: "Yaoundé", code: "cm", continent: "Afrique" },
+      { name: "Gabon", capital: "Libreville", code: "ga", continent: "Afrique" },
+      { name: "Congo", capital: "Brazzaville", code: "cg", continent: "Afrique" },
+      { name: "RD Congo", capital: "Kinshasa", code: "cd", continent: "Afrique" },
+      { name: "Centrafrique", capital: "Bangui", code: "cf", continent: "Afrique" },
+      { name: "Guinée équatoriale", capital: "Malabo", code: "gq", continent: "Afrique" },
+      { name: "São Tomé-et-Príncipe", capital: "São Tomé", code: "st", continent: "Afrique" },
+      { name: "Angola", capital: "Luanda", code: "ao", continent: "Afrique" },
+      { name: "Zambie", capital: "Lusaka", code: "zm", continent: "Afrique" },
+      { name: "Zimbabwe", capital: "Harare", code: "zw", continent: "Afrique" },
+      { name: "Mozambique", capital: "Maputo", code: "mz", continent: "Afrique" },
+      { name: "Malawi", capital: "Lilongwe", code: "mw", continent: "Afrique" },
+      { name: "Tanzanie", capital: "Dodoma", code: "tz", continent: "Afrique" },
+      { name: "Kenya", capital: "Nairobi", code: "ke", continent: "Afrique" },
+      { name: "Ouganda", capital: "Kampala", code: "ug", continent: "Afrique" },
+      { name: "Rwanda", capital: "Kigali", code: "rw", continent: "Afrique" },
+      { name: "Burundi", capital: "Gitega", code: "bi", continent: "Afrique" },
+      { name: "Éthiopie", capital: "Addis-Abeba", code: "et", continent: "Afrique" },
+      { name: "Érythrée", capital: "Asmara", code: "er", continent: "Afrique" },
+      { name: "Djibouti", capital: "Djibouti", code: "dj", continent: "Afrique" },
+      { name: "Somalie", capital: "Mogadiscio", code: "so", continent: "Afrique" },
+      { name: "Afrique du Sud", capital: "Pretoria", code: "za", continent: "Afrique" },
+      { name: "Namibie", capital: "Windhoek", code: "na", continent: "Afrique" },
+      { name: "Botswana", capital: "Gaborone", code: "bw", continent: "Afrique" },
+      { name: "Lesotho", capital: "Maseru", code: "ls", continent: "Afrique" },
+      { name: "Eswatini", capital: "Mbabane", code: "sz", continent: "Afrique" },
+      { name: "Madagascar", capital: "Antananarivo", code: "mg", continent: "Afrique" },
+      { name: "Maurice", capital: "Port-Louis", code: "mu", continent: "Afrique" },
+      { name: "Comores", capital: "Moroni", code: "km", continent: "Afrique" },
+      { name: "Seychelles", capital: "Victoria", code: "sc", continent: "Afrique" },
+      { name: "Cap-Vert", capital: "Praia", code: "cv", continent: "Afrique" },
+      { name: "Soudan du Sud", capital: "Djouba", code: "ss", continent: "Afrique" },
+      // ASIE
+      { name: "Chine", capital: "Pékin", code: "cn", continent: "Asie" },
+      { name: "Japon", capital: "Tokyo", code: "jp", continent: "Asie" },
+      { name: "Corée du Sud", capital: "Séoul", code: "kr", continent: "Asie" },
+      { name: "Corée du Nord", capital: "Pyongyang", code: "kp", continent: "Asie" },
+      { name: "Inde", capital: "New Delhi", code: "in", continent: "Asie" },
+      { name: "Pakistan", capital: "Islamabad", code: "pk", continent: "Asie" },
+      { name: "Bangladesh", capital: "Dacca", code: "bd", continent: "Asie" },
+      { name: "Sri Lanka", capital: "Sri Jayawardenapura", code: "lk", continent: "Asie" },
+      { name: "Népal", capital: "Katmandou", code: "np", continent: "Asie" },
+      { name: "Bhoutan", capital: "Thimphou", code: "bt", continent: "Asie" },
+      { name: "Myanmar", capital: "Naypyidaw", code: "mm", continent: "Asie" },
+      { name: "Thaïlande", capital: "Bangkok", code: "th", continent: "Asie" },
+      { name: "Vietnam", capital: "Hanoï", code: "vn", continent: "Asie" },
+      { name: "Cambodge", capital: "Phnom Penh", code: "kh", continent: "Asie" },
+      { name: "Laos", capital: "Vientiane", code: "la", continent: "Asie" },
+      { name: "Malaisie", capital: "Kuala Lumpur", code: "my", continent: "Asie" },
+      { name: "Indonésie", capital: "Jakarta", code: "id", continent: "Asie" },
+      { name: "Philippines", capital: "Manille", code: "ph", continent: "Asie" },
+      { name: "Singapour", capital: "Singapour", code: "sg", continent: "Asie" },
+      { name: "Mongolie", capital: "Oulan-Bator", code: "mn", continent: "Asie" },
+      { name: "Kazakhstan", capital: "Astana", code: "kz", continent: "Asie" },
+      { name: "Ouzbékistan", capital: "Tachkent", code: "uz", continent: "Asie" },
+      { name: "Turkménistan", capital: "Achgabat", code: "tm", continent: "Asie" },
+      { name: "Kirghizistan", capital: "Bichkek", code: "kg", continent: "Asie" },
+      { name: "Tadjikistan", capital: "Douchanbé", code: "tj", continent: "Asie" },
+      { name: "Afghanistan", capital: "Kaboul", code: "af", continent: "Asie" },
+      { name: "Iran", capital: "Téhéran", code: "ir", continent: "Asie" },
+      { name: "Irak", capital: "Bagdad", code: "iq", continent: "Asie" },
+      { name: "Arabie saoudite", capital: "Riyad", code: "sa", continent: "Asie" },
+      { name: "Yémen", capital: "Sanaa", code: "ye", continent: "Asie" },
+      { name: "Oman", capital: "Mascate", code: "om", continent: "Asie" },
+      { name: "Émirats arabes unis", capital: "Abou Dabi", code: "ae", continent: "Asie" },
+      { name: "Qatar", capital: "Doha", code: "qa", continent: "Asie" },
+      { name: "Bahreïn", capital: "Manama", code: "bh", continent: "Asie" },
+      { name: "Koweït", capital: "Koweït", code: "kw", continent: "Asie" },
+      { name: "Jordanie", capital: "Amman", code: "jo", continent: "Asie" },
+      { name: "Liban", capital: "Beyrouth", code: "lb", continent: "Asie" },
+      { name: "Syrie", capital: "Damas", code: "sy", continent: "Asie" },
+      { name: "Israël", capital: "Jérusalem", code: "il", continent: "Asie" },
+      { name: "Palestine", capital: "Ramallah", code: "ps", continent: "Asie" },
+      { name: "Géorgie", capital: "Tbilissi", code: "ge", continent: "Asie" },
+      { name: "Arménie", capital: "Erevan", code: "am", continent: "Asie" },
+      { name: "Azerbaïdjan", capital: "Bakou", code: "az", continent: "Asie" },
+      { name: "Timor oriental", capital: "Dili", code: "tl", continent: "Asie" },
+      { name: "Brunei", capital: "Bandar Seri Begawan", code: "bn", continent: "Asie" },
+      { name: "Maldives", capital: "Malé", code: "mv", continent: "Asie" },
+      // AMÉRIQUES
+      { name: "États-Unis", capital: "Washington", code: "us", continent: "Amériques" },
+      { name: "Canada", capital: "Ottawa", code: "ca", continent: "Amériques" },
+      { name: "Mexique", capital: "Mexico", code: "mx", continent: "Amériques" },
+      { name: "Brésil", capital: "Brasilia", code: "br", continent: "Amériques" },
+      { name: "Argentine", capital: "Buenos Aires", code: "ar", continent: "Amériques" },
+      { name: "Chili", capital: "Santiago", code: "cl", continent: "Amériques" },
+      { name: "Pérou", capital: "Lima", code: "pe", continent: "Amériques" },
+      { name: "Colombie", capital: "Bogota", code: "co", continent: "Amériques" },
+      { name: "Venezuela", capital: "Caracas", code: "ve", continent: "Amériques" },
+      { name: "Équateur", capital: "Quito", code: "ec", continent: "Amériques" },
+      { name: "Bolivie", capital: "Sucre", code: "bo", continent: "Amériques" },
+      { name: "Paraguay", capital: "Asunción", code: "py", continent: "Amériques" },
+      { name: "Uruguay", capital: "Montevideo", code: "uy", continent: "Amériques" },
+      { name: "Guyana", capital: "Georgetown", code: "gy", continent: "Amériques" },
+      { name: "Suriname", capital: "Paramaribo", code: "sr", continent: "Amériques" },
+      { name: "Guatemala", capital: "Guatemala", code: "gt", continent: "Amériques" },
+      { name: "Belize", capital: "Belmopan", code: "bz", continent: "Amériques" },
+      { name: "Honduras", capital: "Tegucigalpa", code: "hn", continent: "Amériques" },
+      { name: "Salvador", capital: "San Salvador", code: "sv", continent: "Amériques" },
+      { name: "Nicaragua", capital: "Managua", code: "ni", continent: "Amériques" },
+      { name: "Costa Rica", capital: "San José", code: "cr", continent: "Amériques" },
+      { name: "Panama", capital: "Panama", code: "pa", continent: "Amériques" },
+      { name: "Cuba", capital: "La Havane", code: "cu", continent: "Amériques" },
+      { name: "Haïti", capital: "Port-au-Prince", code: "ht", continent: "Amériques" },
+      { name: "République dominicaine", capital: "Saint-Domingue", code: "do", continent: "Amériques" },
+      { name: "Jamaïque", capital: "Kingston", code: "jm", continent: "Amériques" },
+      { name: "Trinité-et-Tobago", capital: "Port-d'Espagne", code: "tt", continent: "Amériques" },
+      { name: "Barbade", capital: "Bridgetown", code: "bb", continent: "Amériques" },
+      { name: "Bahamas", capital: "Nassau", code: "bs", continent: "Amériques" },
+      { name: "Antigua-et-Barbuda", capital: "Saint John's", code: "ag", continent: "Amériques" },
+      { name: "Saint-Kitts-et-Nevis", capital: "Basseterre", code: "kn", continent: "Amériques" },
+      { name: "Sainte-Lucie", capital: "Castries", code: "lc", continent: "Amériques" },
+      { name: "Grenade", capital: "Saint-Georges", code: "gd", continent: "Amériques" },
+      { name: "Saint-Vincent-et-les-Grenadines", capital: "Kingstown", code: "vc", continent: "Amériques" },
+      { name: "Dominique", capital: "Roseau", code: "dm", continent: "Amériques" },
+      // OCÉANIE
+      { name: "Australie", capital: "Canberra", code: "au", continent: "Océanie" },
+      { name: "Nouvelle-Zélande", capital: "Wellington", code: "nz", continent: "Océanie" },
+      { name: "Papouasie-Nouvelle-Guinée", capital: "Port Moresby", code: "pg", continent: "Océanie" },
+      { name: "Fidji", capital: "Suva", code: "fj", continent: "Océanie" },
+      { name: "Samoa", capital: "Apia", code: "ws", continent: "Océanie" },
+      { name: "Tonga", capital: "Nukualofa", code: "to", continent: "Océanie" },
+      { name: "Vanuatu", capital: "Port-Vila", code: "vu", continent: "Océanie" },
+      { name: "Îles Salomon", capital: "Honiara", code: "sb", continent: "Océanie" },
+      { name: "Kiribati", capital: "Tarawa-Sud", code: "ki", continent: "Océanie" },
+      { name: "Micronésie", capital: "Palikir", code: "fm", continent: "Océanie" },
+      { name: "Palaos", capital: "Ngerulmud", code: "pw", continent: "Océanie" },
+      { name: "Îles Marshall", capital: "Majuro", code: "mh", continent: "Océanie" },
+      { name: "Nauru", capital: "Yaren", code: "nr", continent: "Océanie" },
+      { name: "Tuvalu", capital: "Funafuti", code: "tv", continent: "Océanie" },
+    ];
+
+    const flagUrl = code => `https://flagcdn.com/w320/${code}.png`;
+
+    // ===== GEOGRAPHY DATA =====
+    const ALL_GEO = [
+      // MONTAGNES
+      { name: "Everest", type: "montagne", detail: "8 849 m", lat: 27.99, lng: 86.93, zoom: 7 },
+      { name: "K2", type: "montagne", detail: "8 611 m", lat: 35.88, lng: 76.51, zoom: 7 },
+      { name: "Kangchenjunga", type: "montagne", detail: "8 586 m", lat: 27.70, lng: 88.15, zoom: 7 },
+      { name: "Mont Blanc", type: "montagne", detail: "4 808 m", lat: 45.83, lng: 6.86, zoom: 8 },
+      { name: "Kilimandjaro", type: "montagne", detail: "5 895 m", lat: -3.07, lng: 37.35, zoom: 7 },
+      { name: "Denali", type: "montagne", detail: "6 190 m", lat: 63.07, lng: -151.01, zoom: 6 },
+      { name: "Aconcagua", type: "montagne", detail: "6 961 m", lat: -32.65, lng: -70.01, zoom: 7 },
+      { name: "Elbrouz", type: "montagne", detail: "5 642 m", lat: 43.35, lng: 42.44, zoom: 7 },
+      { name: "Mont Fuji", type: "montagne", detail: "3 776 m", lat: 35.36, lng: 138.73, zoom: 8 },
+      { name: "Mont Kenya", type: "montagne", detail: "5 199 m", lat: -0.15, lng: 37.31, zoom: 7 },
+      { name: "Cervin (Matterhorn)", type: "montagne", detail: "4 478 m", lat: 45.98, lng: 7.66, zoom: 9 },
+      { name: "Annapurna", type: "montagne", detail: "8 091 m", lat: 28.60, lng: 83.82, zoom: 7 },
+      { name: "Mont Vinson", type: "montagne", detail: "4 892 m", lat: -78.53, lng: -85.62, zoom: 4 },
+      { name: "Puncak Jaya", type: "montagne", detail: "4 884 m", lat: -4.08, lng: 137.16, zoom: 7 },
+      { name: "Mont Logan", type: "montagne", detail: "5 959 m", lat: 60.57, lng: -140.41, zoom: 6 },
+      { name: "Ben Nevis", type: "montagne", detail: "1 345 m", lat: 56.80, lng: -5.00, zoom: 8 },
+      { name: "Etna", type: "montagne", detail: "3 357 m", lat: 37.75, lng: 14.99, zoom: 8 },
+      { name: "Piton de la Fournaise", type: "montagne", detail: "2 632 m", lat: -21.24, lng: 55.71, zoom: 9 },
+      // FLEUVES
+      { name: "Nil", type: "fleuve", detail: "6 650 km", lat: 25.0, lng: 32.5, zoom: 4 },
+      { name: "Amazone", type: "fleuve", detail: "6 400 km", lat: -3.0, lng: -60.0, zoom: 4 },
+      { name: "Yangtsé", type: "fleuve", detail: "6 300 km", lat: 30.8, lng: 111.3, zoom: 4 },
+      { name: "Mississippi", type: "fleuve", detail: "6 275 km", lat: 38.0, lng: -90.2, zoom: 4 },
+      { name: "Ienisseï", type: "fleuve", detail: "5 540 km", lat: 58.0, lng: 92.5, zoom: 3 },
+      { name: "Huang He", type: "fleuve", detail: "5 464 km", lat: 37.8, lng: 110.0, zoom: 4 },
+      { name: "Congo", type: "fleuve", detail: "4 700 km", lat: -4.3, lng: 15.3, zoom: 4 },
+      { name: "Mékong", type: "fleuve", detail: "4 350 km", lat: 16.0, lng: 105.8, zoom: 4 },
+      { name: "Niger", type: "fleuve", detail: "4 184 km", lat: 11.9, lng: 3.5, zoom: 4 },
+      { name: "Volga", type: "fleuve", detail: "3 530 km", lat: 53.0, lng: 49.0, zoom: 4 },
+      { name: "Danube", type: "fleuve", detail: "2 850 km", lat: 47.0, lng: 19.0, zoom: 4 },
+      { name: "Rhin", type: "fleuve", detail: "1 230 km", lat: 50.9, lng: 6.9, zoom: 5 },
+      { name: "Gange", type: "fleuve", detail: "2 525 km", lat: 25.3, lng: 83.0, zoom: 5 },
+      { name: "Loire", type: "fleuve", detail: "1 006 km", lat: 47.3, lng: 0.7, zoom: 6 },
+      { name: "Seine", type: "fleuve", detail: "777 km", lat: 48.9, lng: 2.3, zoom: 7 },
+      { name: "Rh\u00f4ne", type: "fleuve", detail: "812 km", lat: 45.7, lng: 4.8, zoom: 6 },
+      { name: "Tamise", type: "fleuve", detail: "346 km", lat: 51.5, lng: -0.1, zoom: 7 },
+      // MERS
+      { name: "M\u00e9diterran\u00e9e", type: "mer", detail: "Atlantique", lat: 35.5, lng: 18.0, zoom: 4 },
+      { name: "Mer Rouge", type: "mer", detail: "Indien", lat: 20.0, lng: 38.5, zoom: 5 },
+      { name: "Mer Noire", type: "mer", detail: "Atlantique", lat: 43.0, lng: 35.0, zoom: 5 },
+      { name: "Mer Caspienne", type: "mer", detail: "Mer ferm\u00e9e", lat: 41.7, lng: 51.0, zoom: 4 },
+      { name: "Mer Baltique", type: "mer", detail: "Atlantique", lat: 59.0, lng: 21.0, zoom: 4 },
+      { name: "Mer du Nord", type: "mer", detail: "Atlantique", lat: 56.0, lng: 3.3, zoom: 4 },
+      { name: "Mer d'Arabie", type: "mer", detail: "Indien", lat: 15.0, lng: 65.0, zoom: 4 },
+      { name: "Mer de Chine m\u00e9ridionale", type: "mer", detail: "Pacifique", lat: 12.0, lng: 113.0, zoom: 4 },
+      { name: "Mer du Japon", type: "mer", detail: "Pacifique", lat: 40.0, lng: 135.0, zoom: 4 },
+      { name: "Mer des Cara\u00efbes", type: "mer", detail: "Atlantique", lat: 15.0, lng: -75.0, zoom: 4 },
+      { name: "Mer de Corail", type: "mer", detail: "Pacifique", lat: -18.0, lng: 155.0, zoom: 4 },
+      { name: "Manche", type: "mer", detail: "Atlantique", lat: 50.2, lng: -1.5, zoom: 6 },
+      { name: "Mer de Barents", type: "mer", detail: "Arctique", lat: 75.0, lng: 40.0, zoom: 3 },
+      // OCÉANS
+      { name: "Oc\u00e9an Pacifique", type: "ocean", detail: "165,2 M km\u00b2", lat: 0, lng: -160, zoom: 2 },
+      { name: "Oc\u00e9an Atlantique", type: "ocean", detail: "106,5 M km\u00b2", lat: 10, lng: -30, zoom: 2 },
+      { name: "Oc\u00e9an Indien", type: "ocean", detail: "73,6 M km\u00b2", lat: -15, lng: 70, zoom: 2 },
+      { name: "Oc\u00e9an Arctique", type: "ocean", detail: "14,1 M km\u00b2", lat: 85, lng: 0, zoom: 2 },
+      { name: "Oc\u00e9an Austral", type: "ocean", detail: "20,3 M km\u00b2", lat: -65, lng: 0, zoom: 2 },
+    ];
+
+    const GEO_TYPES = { montagne: '\u26f0\ufe0f', fleuve: '\ud83c\udf0a', mer: '\ud83c\udf0a', ocean: '\ud83c\udf0d' };
+
+    // ===== STATE =====
+    let currentSection = 'pays';
+    let currentMode = 'flashcard';
+    let currentFilter = 'all';
+    let filteredCountries = [];
+    let filteredGeo = [];
+    let shuffled = [];
+    let idx = 0;
+    let revealed = false;
+    let score = 0;
+    let total = 0;
+    let answered = false;
+
+    const PAYS_MODES = [
+      { id: 'flashcard', label: '\ud83d\udcc7 Flashcards' },
+      { id: 'quiz-capital', label: '\ud83c\udfdb\ufe0f Quiz Capitales' },
+      { id: 'quiz-flag', label: '\ud83c\udff4 Quiz Drapeaux' },
+      { id: 'map-capital', label: '\ud83d\uddfa\ufe0f Map \u2192 Capitale' },
+      { id: 'map-country', label: '\ud83d\udccd Map \u2192 Pays' },
+    ];
+    const GEO_MODES = [
+      { id: 'geo-flash', label: '\ud83d\udcc7 Flashcards' },
+      { id: 'geo-map-name', label: '\ud83d\uddfa\ufe0f Carte \u2192 Nom' },
+      { id: 'geo-name-detail', label: '\ud83d\udcdd Nom \u2192 D\u00e9tail' },
+    ];
+    const PAYS_FILTERS = [
+      { id: 'all', label: '\ud83c\udf10 Tous' }, { id: 'Europe', label: '\ud83c\uddea\ud83c\uddfa Europe' }, { id: 'Afrique', label: '\ud83c\udf0d Afrique' },
+      { id: 'Asie', label: '\ud83c\udf0f Asie' }, { id: 'Am\u00e9riques', label: '\ud83c\udf0e Am\u00e9riques' }, { id: 'Oc\u00e9anie', label: '\ud83c\udfdd\ufe0f Oc\u00e9anie' },
+    ];
+    const GEO_FILTERS = [
+      { id: 'all', label: '\ud83c\udf10 Tous' }, { id: 'montagne', label: '\u26f0\ufe0f Montagnes' }, { id: 'fleuve', label: '\ud83c\udfe2 Fleuves' },
+      { id: 'mer', label: '\ud83c\udf0a Mers' }, { id: 'ocean', label: '\ud83c\udf0d Oc\u00e9ans' },
+    ];
+
+    // ===== INIT =====
+    function buildUI() {
+      const modeBar = document.getElementById('mode-bar');
+      const filterBar = document.querySelector('.filter-bar');
+      const modes = currentSection === 'pays' ? PAYS_MODES : GEO_MODES;
+      const filters = currentSection === 'pays' ? PAYS_FILTERS : GEO_FILTERS;
+
+      modeBar.innerHTML = modes.map((m, i) =>
+        `<button class="mode-btn${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.label}</button>`
+      ).join('');
+      filterBar.innerHTML = filters.map((f, i) =>
+        `<button class="filter-btn${i === 0 ? ' active' : ''}" data-filter="${f.id}">${f.label}</button>`
+      ).join('');
+
+      currentMode = modes[0].id;
+      currentFilter = 'all';
+
+      modeBar.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modeBar.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentMode = btn.dataset.mode;
+          resetAndRender();
+        });
+      });
+      filterBar.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          resetAndRender();
+        });
+      });
+    }
+
+    function init() {
+      document.querySelectorAll('.section-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.section-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentSection = btn.dataset.section;
+          buildUI();
+          resetAndRender();
+        });
+      });
+      buildUI();
+      resetAndRender();
+    }
+
+    function resetAndRender() {
+      if (currentSection === 'pays') {
+        filteredCountries = currentFilter === 'all'
+          ? [...ALL_COUNTRIES]
+          : ALL_COUNTRIES.filter(c => c.continent === currentFilter);
+        shuffled = shuffle([...filteredCountries]);
+      } else {
+        filteredGeo = currentFilter === 'all'
+          ? [...ALL_GEO]
+          : ALL_GEO.filter(g => g.type === currentFilter);
+        shuffled = shuffle([...filteredGeo]);
+      }
+      idx = 0;
+      score = 0;
+      total = 0;
+      revealed = false;
+      answered = false;
+      render();
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function pickDistractors(correct, pool, n = 3) {
+      const key = correct.code ? 'code' : 'name';
+      const others = pool.filter(c => c[key] !== correct[key]);
+      const picks = [];
+      const used = new Set();
+      while (picks.length < n && picks.length < others.length) {
+        const r = Math.floor(Math.random() * others.length);
+        if (!used.has(r)) {
+          used.add(r);
+          picks.push(others[r]);
+        }
+      }
+      return picks;
+    }
+
+    function shuffleOptions(correct, distractors) {
+      const all = [correct, ...distractors];
+      return shuffle(all);
+    }
+
+    // ===== COORDS (lat, lng, zoom) =====
+    const COORDS = {
+      fr: [46.6, 2.3, 5], de: [51.2, 10.4, 5], es: [40.0, -3.7, 5], it: [42.5, 12.5, 5], pt: [39.4, -8.2, 6], gb: [54.0, -2.0, 5], ie: [53.4, -8.2, 6], be: [50.8, 4.5, 7], nl: [52.1, 5.3, 7], lu: [49.8, 6.1, 8], ch: [46.8, 8.2, 7], at: [47.5, 14.6, 6], pl: [51.9, 19.1, 5], cz: [49.8, 15.5, 6], sk: [48.7, 19.7, 6], hu: [47.2, 19.5, 6], ro: [45.9, 24.9, 6], bg: [42.7, 25.5, 6], gr: [39.1, 21.8, 6], hr: [45.1, 15.2, 6], rs: [44.0, 20.9, 6], si: [46.2, 14.8, 7], ba: [43.9, 17.7, 7], me: [42.5, 19.3, 7], mk: [41.5, 21.7, 7], al: [41.2, 20.2, 7], xk: [42.6, 20.9, 8], dk: [56.3, 9.5, 6], se: [62.0, 15.0, 4], no: [64.0, 12.0, 4], fi: [64.0, 26.0, 4], is: [65.0, -18.5, 5], ee: [59.0, 25.0, 6], lv: [56.9, 24.1, 6], lt: [55.2, 24.0, 6], ua: [49.0, 31.4, 5], by: [53.7, 27.9, 6], md: [47.0, 28.5, 7], ru: [61.5, 105.3, 3], tr: [39.0, 35.2, 5], cy: [35.1, 33.4, 8], mt: [35.9, 14.5, 10], ad: [42.5, 1.5, 10], mc: [43.7, 7.4, 12], sm: [43.9, 12.5, 10], li: [47.2, 9.5, 10], va: [41.9, 12.5, 12], ma: [32.0, -5.0, 5], dz: [28.0, 1.7, 4], tn: [34.0, 9.0, 6], ly: [27.0, 17.2, 5], eg: [27.0, 30.8, 5], mr: [20.3, -10.9, 5], ml: [17.6, -4.0, 5], ne: [17.6, 8.1, 5], td: [15.5, 18.7, 5], sd: [15.0, 32.5, 5], sn: [14.5, -14.5, 6], gm: [13.4, -16.6, 8], gw: [12.0, -15.0, 7], gn: [10.4, -11.8, 6], sl: [8.5, -11.8, 7], lr: [6.4, -9.4, 7], ci: [7.5, -5.5, 6], bf: [12.4, -1.6, 6], gh: [7.9, -1.0, 6], tg: [8.6, 1.0, 7], bj: [9.3, 2.3, 6], ng: [9.1, 8.7, 5], cm: [6.0, 12.3, 5], ga: [-0.8, 11.6, 6], cg: [-0.2, 15.8, 6], cd: [-4.0, 21.8, 4], cf: [6.6, 20.9, 5], gq: [1.6, 10.3, 8], st: [0.2, 6.6, 9], ao: [-11.2, 17.9, 5], zm: [-13.1, 27.8, 5], zw: [-19.0, 29.2, 6], mz: [-18.7, 35.5, 5], mw: [-13.3, 34.3, 6], tz: [-6.4, 34.9, 5], ke: [-0.7, 37.6, 5], ug: [1.4, 32.3, 6], rw: [-2.0, 29.9, 8], bi: [-3.4, 29.9, 8], et: [9.0, 38.7, 5], er: [15.2, 39.8, 6], dj: [11.6, 43.1, 8], so: [5.2, 46.2, 5], za: [-30.6, 22.9, 5], na: [-22.0, 17.0, 5], bw: [-22.3, 24.7, 5], ls: [-29.6, 28.2, 8], sz: [-26.5, 31.5, 8], mg: [-18.8, 46.9, 5], mu: [-20.3, 57.6, 9], km: [-11.9, 43.9, 9], sc: [-4.6, 55.5, 9], cv: [16.0, -24.0, 8], ss: [6.9, 31.3, 5], cn: [35.9, 104.2, 3], jp: [36.2, 138.3, 5], kr: [36.0, 128.0, 6], kp: [40.0, 127.0, 6], in: [20.6, 79.0, 4], pk: [30.4, 69.3, 5], bd: [24.0, 90.4, 6], lk: [7.9, 80.8, 7], np: [28.2, 84.3, 6], bt: [27.5, 90.4, 7], mm: [19.8, 96.1, 5], th: [15.9, 100.9, 5], vn: [16.1, 108.0, 5], kh: [12.6, 105.0, 6], la: [19.9, 102.5, 6], my: [4.2, 101.9, 5], id: [-0.8, 113.9, 4], ph: [12.9, 122.0, 5], sg: [1.4, 103.8, 10], mn: [46.9, 103.8, 4], kz: [48.0, 68.0, 4], uz: [41.4, 64.6, 5], tm: [39.0, 59.6, 5], kg: [41.2, 74.8, 6], tj: [38.9, 71.3, 6], af: [33.9, 67.7, 5], ir: [32.4, 53.7, 5], iq: [33.2, 43.7, 5], sa: [24.7, 45.1, 5], ye: [15.6, 48.5, 5], om: [21.5, 56.0, 5], ae: [23.4, 53.8, 6], qa: [25.4, 51.2, 8], bh: [26.0, 50.6, 9], kw: [29.3, 47.5, 7], jo: [31.2, 36.8, 7], lb: [33.9, 35.9, 8], sy: [35.0, 38.5, 6], il: [31.0, 34.8, 7], ps: [31.9, 35.2, 8], ge: [42.3, 43.4, 7], am: [40.1, 45.0, 7], az: [40.1, 47.6, 6], tl: [-8.9, 126.0, 8], bn: [4.9, 114.9, 8], mv: [3.2, 73.2, 7], us: [37.1, -95.7, 4], ca: [56.1, -106.3, 3], mx: [23.6, -102.6, 4], br: [-14.2, -51.9, 3], ar: [-38.4, -63.6, 4], cl: [-35.7, -71.5, 4], pe: [-9.2, -75.0, 5], co: [4.6, -74.3, 5], ve: [6.4, -66.6, 5], ec: [-1.8, -78.2, 6], bo: [-16.3, -63.6, 5], py: [-23.4, -58.4, 5], uy: [-32.5, -55.8, 6], gy: [5.0, -58.9, 6], sr: [4.0, -56.0, 6], gt: [15.8, -90.2, 7], bz: [17.2, -88.5, 7], hn: [14.6, -86.3, 6], sv: [13.8, -88.9, 7], ni: [12.9, -85.2, 6], cr: [10.0, -84.0, 7], pa: [8.5, -80.8, 7], cu: [21.5, -79.0, 6], ht: [18.9, -72.3, 7], do: [18.7, -70.2, 7], jm: [18.1, -77.3, 8], tt: [10.4, -61.3, 9], bb: [13.2, -59.5, 10], bs: [25.0, -77.4, 7], ag: [17.1, -61.8, 10], kn: [17.3, -62.7, 10], lc: [14.0, -61.0, 10], gd: [12.1, -61.7, 10], vc: [13.3, -61.2, 10], dm: [15.4, -61.4, 9], au: [-25.3, 133.8, 3], nz: [-40.9, 174.9, 5], pg: [-6.3, 143.9, 5], fj: [-18.0, 179.0, 7], ws: [-13.8, -172.1, 9], to: [-21.2, -175.2, 9], vu: [-15.4, 166.9, 7], sb: [-9.6, 160.2, 6], ki: [1.9, -157.5, 7], fm: [6.9, 158.2, 7], pw: [7.5, 134.6, 9], mh: [7.1, 171.2, 7], nr: [-0.5, 166.9, 12], tv: [-8.5, 179.2, 10]
+    };
+
+    // ISO alpha-2 → alpha-3 mapping
+    const ISO2TO3 = {
+      fr: 'FRA', de: 'DEU', es: 'ESP', it: 'ITA', pt: 'PRT', gb: 'GBR', ie: 'IRL', be: 'BEL', nl: 'NLD', lu: 'LUX', ch: 'CHE', at: 'AUT', pl: 'POL', cz: 'CZE', sk: 'SVK', hu: 'HUN', ro: 'ROU', bg: 'BGR', gr: 'GRC', hr: 'HRV', rs: 'SRB', si: 'SVN', ba: 'BIH', me: 'MNE', mk: 'MKD', al: 'ALB', xk: 'XKX', dk: 'DNK', se: 'SWE', no: 'NOR', fi: 'FIN', is: 'ISL', ee: 'EST', lv: 'LVA', lt: 'LTU', ua: 'UKR', by: 'BLR', md: 'MDA', ru: 'RUS', tr: 'TUR', cy: 'CYP', mt: 'MLT', ad: 'AND', mc: 'MCO', sm: 'SMR', li: 'LIE', va: 'VAT',
+      ma: 'MAR', dz: 'DZA', tn: 'TUN', ly: 'LBY', eg: 'EGY', mr: 'MRT', ml: 'MLI', ne: 'NER', td: 'TCD', sd: 'SDN', sn: 'SEN', gm: 'GMB', gw: 'GNB', gn: 'GIN', sl: 'SLE', lr: 'LBR', ci: 'CIV', bf: 'BFA', gh: 'GHA', tg: 'TGO', bj: 'BEN', ng: 'NGA', cm: 'CMR', ga: 'GAB', cg: 'COG', cd: 'COD', cf: 'CAF', gq: 'GNQ', st: 'STP', ao: 'AGO', zm: 'ZMB', zw: 'ZWE', mz: 'MOZ', mw: 'MWI', tz: 'TZA', ke: 'KEN', ug: 'UGA', rw: 'RWA', bi: 'BDI', et: 'ETH', er: 'ERI', dj: 'DJI', so: 'SOM', za: 'ZAF', na: 'NAM', bw: 'BWA', ls: 'LSO', sz: 'SWZ', mg: 'MDG', mu: 'MUS', km: 'COM', sc: 'SYC', cv: 'CPV', ss: 'SSD',
+      cn: 'CHN', jp: 'JPN', kr: 'KOR', kp: 'PRK', in: 'IND', pk: 'PAK', bd: 'BGD', lk: 'LKA', np: 'NPL', bt: 'BTN', mm: 'MMR', th: 'THA', vn: 'VNM', kh: 'KHM', la: 'LAO', my: 'MYS', id: 'IDN', ph: 'PHL', sg: 'SGP', mn: 'MNG', kz: 'KAZ', uz: 'UZB', tm: 'TKM', kg: 'KGZ', tj: 'TJK', af: 'AFG', ir: 'IRN', iq: 'IRQ', sa: 'SAU', ye: 'YEM', om: 'OMN', ae: 'ARE', qa: 'QAT', bh: 'BHR', kw: 'KWT', jo: 'JOR', lb: 'LBN', sy: 'SYR', il: 'ISR', ps: 'PSE', ge: 'GEO', am: 'ARM', az: 'AZE', tl: 'TLS', bn: 'BRN', mv: 'MDV',
+      us: 'USA', ca: 'CAN', mx: 'MEX', br: 'BRA', ar: 'ARG', cl: 'CHL', pe: 'PER', co: 'COL', ve: 'VEN', ec: 'ECU', bo: 'BOL', py: 'PRY', uy: 'URY', gy: 'GUY', sr: 'SUR', gt: 'GTM', bz: 'BLZ', hn: 'HND', sv: 'SLV', ni: 'NIC', cr: 'CRI', pa: 'PAN', cu: 'CUB', ht: 'HTI', do: 'DOM', jm: 'JAM', tt: 'TTO', bb: 'BRB', bs: 'BHS', ag: 'ATG', kn: 'KNA', lc: 'LCA', gd: 'GRD', vc: 'VCT', dm: 'DMA',
+      au: 'AUS', nz: 'NZL', pg: 'PNG', fj: 'FJI', ws: 'WSM', to: 'TON', vu: 'VUT', sb: 'SLB', ki: 'KIR', fm: 'FSM', pw: 'PLW', mh: 'MHL', nr: 'NRU', tv: 'TUV'
+    };
+
+    let mapInstance = null;
+    let geoData = null;
+    let geoLoading = false;
+
+    function loadGeoJSON() {
+      if (geoData || geoLoading) return Promise.resolve(geoData);
+      geoLoading = true;
+      return fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+        .then(r => r.json())
+        .then(data => { geoData = data; return data; })
+        .catch(() => { geoLoading = false; return null; });
+    }
+
+    function destroyMap() {
+      if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+    }
+
+    function createMap(containerId, lat, lng, zoom, countryCode, showLabel) {
+      destroyMap();
+      requestAnimationFrame(() => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        mapInstance = L.map(containerId, {
+          zoomControl: true, attributionControl: false,
+          dragging: true, scrollWheelZoom: true,
+          doubleClickZoom: true, touchZoom: true
+        }).setView([lat, lng], zoom);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+          subdomains: 'abcd', maxZoom: 19
+        }).addTo(mapInstance);
+
+        // Try to highlight the country polygon
+        const iso3 = ISO2TO3[countryCode];
+        const addPolygon = (data) => {
+          if (!data || !mapInstance) return;
+          const feature = data.features.find(f => f.id === iso3 || (f.properties && f.properties.name === iso3));
+          if (feature) {
+            const layer = L.geoJSON(feature, {
+              style: { color: '#818cf8', fillColor: '#6366f1', fillOpacity: 0.3, weight: 2 }
+            }).addTo(mapInstance);
+            if (showLabel) {
+              layer.bindTooltip(showLabel, {
+                permanent: true, direction: 'center',
+                className: 'map-label'
+              }).openTooltip();
+            }
+          } else {
+            // Fallback: small marker if country not found in GeoJSON
+            const m = L.circleMarker([lat, lng], {
+              radius: 7, color: '#fff', fillColor: '#6366f1', fillOpacity: 1, weight: 2
+            }).addTo(mapInstance);
+            if (showLabel) m.bindTooltip(showLabel, { permanent: true, direction: 'top', offset: [0, -10], className: 'map-label' }).openTooltip();
+          }
+        };
+
+        if (geoData) {
+          addPolygon(geoData);
+        } else {
+          loadGeoJSON().then(addPolygon);
+        }
+      });
+    }
+
+    // ===== RENDER =====
+    function render() {
+      const el = document.getElementById('main-content');
+      const mapModes = ['map-capital', 'map-country', 'geo-map-name', 'geo-flash'];
+      if (!mapModes.includes(currentMode)) destroyMap();
+      if (currentMode === 'flashcard') renderFlashcard(el);
+      else if (currentMode === 'quiz-capital') renderQuizCapital(el);
+      else if (currentMode === 'quiz-flag') renderQuizFlag(el);
+      else if (currentMode === 'map-capital') renderMapCapital(el);
+      else if (currentMode === 'map-country') renderMapCountry(el);
+      else if (currentMode === 'geo-flash') renderGeoFlash(el);
+      else if (currentMode === 'geo-map-name') renderGeoMapName(el);
+      else if (currentMode === 'geo-name-detail') renderGeoNameDetail(el);
+    }
+
+    // --- FLASHCARD ---
+    function renderFlashcard(el) {
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun pays dans cette catégorie.</p></div>'; return; }
+      const c = shuffled[idx];
+      el.innerHTML = `
+        <div class="shuffle-indicator">🔀 Ordre aléatoire</div>
+        <div class="card">
+          <div class="flag-container flag-large">
+            <img src="${flagUrl(c.code)}" alt="Drapeau ${c.name}" loading="lazy">
+          </div>
+          <div class="country-name">${c.name}</div>
+          ${revealed
+          ? `<div class="capital-revealed">🏛️ ${c.capital}</div>`
+          : `<button class="capital-reveal" onclick="revealCapital()">Afficher la capitale</button>`
+        }
+          <div class="nav-row">
+            <button class="nav-btn" onclick="navFlash(-1)" ${idx === 0 ? 'disabled' : ''}">‹</button>
+            <span class="nav-counter">${idx + 1} / ${shuffled.length}</span>
+            <button class="nav-btn" onclick="navFlash(1)" ${idx === shuffled.length - 1 ? 'disabled' : ''}>›</button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.revealCapital = () => { revealed = true; render(); };
+    window.navFlash = (dir) => { idx += dir; revealed = false; render(); };
+
+    // --- QUIZ CAPITALES ---
+    function renderQuizCapital(el) {
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun pays dans cette catégorie.</p></div>'; return; }
+      if (idx >= shuffled.length) { renderEnd(el); return; }
+      const c = shuffled[idx];
+      const distractors = pickDistractors(c, filteredCountries);
+      const options = shuffleOptions(c, distractors);
+
+      el.innerHTML = `
+        <div class="score-bar">
+          <span class="score-text">✅ ${score} / ${total}</span>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${shuffled.length > 0 ? ((idx / shuffled.length) * 100) : 0}%"></div>
+          </div>
+          <span class="score-pct">${total > 0 ? Math.round(score / total * 100) : 0}%</span>
+        </div>
+        <div class="card">
+          <div class="flag-container flag-large">
+            <img src="${flagUrl(c.code)}" alt="Drapeau" loading="lazy">
+          </div>
+          <div class="question-text">Quelle est la capitale de ${c.name} ?</div>
+          <div class="question-sub">${c.continent}</div>
+          <div class="quiz-options" id="quiz-opts">
+            ${options.map((o, i) => `
+              <button class="quiz-opt" data-answer="${o.capital}" data-correct="${c.capital}" onclick="answerCapital(this)">${o.capital}</button>
+            `).join('')}
+          </div>
+          <div id="feedback"></div>
+        </div>
+      `;
+      answered = false;
+    }
+
+    window.answerCapital = (btn) => {
+      if (answered) return;
+      answered = true;
+      total++;
+      const correct = btn.dataset.correct;
+      const answer = btn.dataset.answer;
+      const isCorrect = answer === correct;
+      if (isCorrect) score++;
+
+      document.querySelectorAll('.quiz-opt').forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else if (b === btn && !isCorrect) b.classList.add('wrong');
+      });
+
+      const fb = document.getElementById('feedback');
+      fb.innerHTML = isCorrect
+        ? `<div class="feedback correct-fb">✅ Correct !</div>`
+        : `<div class="feedback wrong-fb">❌ C'était ${correct}</div>`;
+      fb.innerHTML += `<button class="next-btn" onclick="nextQuiz()">Suivant →</button>`;
+    };
+
+    window.nextQuiz = () => { idx++; answered = false; render(); };
+
+    // --- QUIZ DRAPEAUX ---
+    function renderQuizFlag(el) {
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun pays dans cette catégorie.</p></div>'; return; }
+      if (idx >= shuffled.length) { renderEnd(el); return; }
+      const c = shuffled[idx];
+      const distractors = pickDistractors(c, filteredCountries);
+      const options = shuffleOptions(c, distractors);
+
+      el.innerHTML = `
+        <div class="score-bar">
+          <span class="score-text">✅ ${score} / ${total}</span>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${shuffled.length > 0 ? ((idx / shuffled.length) * 100) : 0}%"></div>
+          </div>
+          <span class="score-pct">${total > 0 ? Math.round(score / total * 100) : 0}%</span>
+        </div>
+        <div class="card">
+          <div class="question-text">À quel pays appartient ce drapeau ?</div>
+          <div class="question-sub">Trouvez le bon pays</div>
+          <div class="flag-container flag-large" style="margin-top:16px">
+            <img src="${flagUrl(c.code)}" alt="Drapeau" loading="lazy">
+          </div>
+          <div class="quiz-options" id="quiz-opts">
+            ${options.map(o => `
+              <button class="quiz-opt" data-answer="${o.name}" data-correct="${c.name}" onclick="answerFlag(this)">${o.name}</button>
+            `).join('')}
+          </div>
+          <div id="feedback"></div>
+        </div>
+      `;
+      answered = false;
+    }
+
+    window.answerFlag = (btn) => {
+      if (answered) return;
+      answered = true;
+      total++;
+      const correct = btn.dataset.correct;
+      const answer = btn.dataset.answer;
+      const isCorrect = answer === correct;
+      if (isCorrect) score++;
+
+      document.querySelectorAll('.quiz-opt').forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else if (b === btn && !isCorrect) b.classList.add('wrong');
+      });
+
+      const fb = document.getElementById('feedback');
+      fb.innerHTML = isCorrect
+        ? `<div class="feedback correct-fb">✅ Correct !</div>`
+        : `<div class="feedback wrong-fb">❌ C'était ${correct}</div>`;
+      fb.innerHTML += `<button class="next-btn" onclick="nextQuiz()">Suivant →</button>`;
+    };
+
+    // --- MAP → CAPITALE ---
+    function renderMapCapital(el) {
+      destroyMap();
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun pays dans cette catégorie.</p></div>'; return; }
+      if (idx >= shuffled.length) { renderEnd(el); return; }
+      const c = shuffled[idx];
+      const coords = COORDS[c.code];
+      const distractors = pickDistractors(c, filteredCountries);
+      const options = shuffleOptions(c, distractors);
+      el.innerHTML = `
+        <div class="score-bar">
+          <span class="score-text">✅ ${score} / ${total}</span>
+          <div class="progress-track"><div class="progress-fill" style="width:${shuffled.length > 0 ? ((idx / shuffled.length) * 100) : 0}%"></div></div>
+          <span class="score-pct">${total > 0 ? Math.round(score / total * 100) : 0}%</span>
+        </div>
+        <div class="card">
+          <div class="question-text">Quelle est la capitale de ${c.name} ?</div>
+          <div class="question-sub">📍 Repérez le pays sur la carte</div>
+          <div class="map-wrapper" id="quiz-map"></div>
+          <div class="quiz-options" id="quiz-opts">
+            ${options.map(o => `<button class="quiz-opt" data-answer="${o.capital}" data-correct="${c.capital}" onclick="answerMapCapital(this)">${o.capital}</button>`).join('')}
+          </div>
+          <div id="feedback"></div>
+        </div>
+      `;
+      answered = false;
+      if (coords) createMap('quiz-map', coords[0], coords[1], coords[2], c.code, c.name);
+    }
+
+    window.answerMapCapital = (btn) => {
+      if (answered) return;
+      answered = true; total++;
+      const correct = btn.dataset.correct;
+      const answer = btn.dataset.answer;
+      if (answer === correct) score++;
+      document.querySelectorAll('.quiz-opt').forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else if (b === btn && answer !== correct) b.classList.add('wrong');
+      });
+      const fb = document.getElementById('feedback');
+      fb.innerHTML = answer === correct
+        ? '<div class="feedback correct-fb">✅ Correct !</div>'
+        : `<div class="feedback wrong-fb">❌ C\'était ${correct}</div>`;
+      fb.innerHTML += '<button class="next-btn" onclick="nextQuiz()">Suivant →</button>';
+    };
+
+    // --- MAP → PAYS ---
+    function renderMapCountry(el) {
+      destroyMap();
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun pays dans cette catégorie.</p></div>'; return; }
+      if (idx >= shuffled.length) { renderEnd(el); return; }
+      const c = shuffled[idx];
+      const coords = COORDS[c.code];
+      const distractors = pickDistractors(c, filteredCountries);
+      const options = shuffleOptions(c, distractors);
+      el.innerHTML = `
+        <div class="score-bar">
+          <span class="score-text">✅ ${score} / ${total}</span>
+          <div class="progress-track"><div class="progress-fill" style="width:${shuffled.length > 0 ? ((idx / shuffled.length) * 100) : 0}%"></div></div>
+          <span class="score-pct">${total > 0 ? Math.round(score / total * 100) : 0}%</span>
+        </div>
+        <div class="card">
+          <div class="question-text">Quel est ce pays ?</div>
+          <div class="question-sub">📍 Identifiez le pays pointé sur la carte</div>
+          <div class="map-wrapper" id="quiz-map"></div>
+          <div class="quiz-options" id="quiz-opts">
+            ${options.map(o => `<button class="quiz-opt" data-answer="${o.name}" data-correct="${c.name}" onclick="answerMapCountry(this)">${o.name}</button>`).join('')}
+          </div>
+          <div id="feedback"></div>
+        </div>
+      `;
+      answered = false;
+      if (coords) createMap('quiz-map', coords[0], coords[1], coords[2], c.code);
+    }
+
+    window.answerMapCountry = (btn) => {
+      if (answered) return;
+      answered = true; total++;
+      const correct = btn.dataset.correct;
+      const answer = btn.dataset.answer;
+      if (answer === correct) score++;
+      document.querySelectorAll('.quiz-opt').forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else if (b === btn && answer !== correct) b.classList.add('wrong');
+      });
+      const fb = document.getElementById('feedback');
+      fb.innerHTML = answer === correct
+        ? '<div class="feedback correct-fb">✅ Correct !</div>'
+        : `<div class="feedback wrong-fb">❌ C\'était ${correct}</div>`;
+      fb.innerHTML += '<button class="next-btn" onclick="nextQuiz()">Suivant →</button>';
+    };
+
+    // ===== GEO MODES =====
+    function geoTypeLabel(t) {
+      return { montagne: '⛰️ Montagne', fleuve: '🏞️ Fleuve', mer: '🌊 Mer', ocean: '🌍 Océan' }[t] || t;
+    }
+    function geoDetailLabel(t) {
+      return { montagne: 'Altitude', fleuve: 'Longueur', mer: 'Océan rattaché', ocean: 'Superficie' }[t] || 'Détail';
+    }
+
+    // --- GEO FLASHCARD ---
+    function renderGeoFlash(el) {
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun élément.</p></div>'; return; }
+      const g = shuffled[idx];
+      el.innerHTML = `
+        <div class="shuffle-indicator">🔀 Ordre aléatoire</div>
+        <div class="card">
+          <div style="font-size:1.1rem;color:#818cf8;margin-bottom:6px">${geoTypeLabel(g.type)}</div>
+          <div class="map-wrapper" id="quiz-map"></div>
+          <h2 style="margin:12px 0 4px">${g.name}</h2>
+          <p style="color:var(--text-dim)">${geoDetailLabel(g.type)} : <strong id="geo-detail" style="visibility:hidden;color:#818cf8">${g.detail}</strong></p>
+          <button class="reveal-btn" onclick="document.getElementById('geo-detail').style.visibility='visible'; this.style.display='none'">Afficher le détail</button>
+          <div class="nav-controls">
+            <button class="nav-btn" onclick="idx=(idx-1+shuffled.length)%shuffled.length; render()">‹</button>
+            <span class="counter">${idx + 1} / ${shuffled.length}</span>
+            <button class="nav-btn" onclick="idx=(idx+1)%shuffled.length; render()">›</button>
+          </div>
+        </div>
+      `;
+      createMapGeo('quiz-map', g.lat, g.lng, g.zoom, g.name);
+    }
+
+    function createMapGeo(containerId, lat, lng, zoom, label) {
+      destroyMap();
+      requestAnimationFrame(() => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        mapInstance = L.map(containerId, {
+          zoomControl: true, attributionControl: false,
+          dragging: true, scrollWheelZoom: true,
+          doubleClickZoom: true, touchZoom: true
+        }).setView([lat, lng], zoom);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+          subdomains: 'abcd', maxZoom: 19
+        }).addTo(mapInstance);
+        const m = L.circleMarker([lat, lng], {
+          radius: 8, color: '#fff', fillColor: '#6366f1', fillOpacity: 1, weight: 2
+        }).addTo(mapInstance);
+        if (label) m.bindTooltip(label, { permanent: true, direction: 'top', offset: [0, -10], className: 'map-label' }).openTooltip();
+      });
+    }
+
+    // --- GEO MAP → NOM ---
+    function renderGeoMapName(el) {
+      destroyMap();
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun élément.</p></div>'; return; }
+      if (idx >= shuffled.length) { renderEnd(el); return; }
+      const g = shuffled[idx];
+      const pool = currentFilter === 'all' ? ALL_GEO : ALL_GEO.filter(x => x.type === g.type);
+      const distractors = pickDistractors(g, pool);
+      const options = shuffle([g, ...distractors]);
+      el.innerHTML = `
+        <div class="score-bar">✅ ${score} / ${total} <div class="progress-bar"><div class="progress-fill" style="width:${total ? Math.round(score / total * 100) : 0}%"></div></div> ${total ? Math.round(score / total * 100) : 0}%</div>
+        <div class="card">
+          <div class="question-text">Quel est cet élément géographique ?</div>
+          <div class="question-sub">📍 ${geoTypeLabel(g.type)} — Identifiez sur la carte</div>
+          <div class="map-wrapper" id="quiz-map"></div>
+          <div class="quiz-options" id="quiz-opts">
+            ${options.map(o => `<button class="quiz-opt" data-answer="${o.name}" data-correct="${g.name}" onclick="answerGeoMapName(this)">${o.name}</button>`).join('')}
+          </div>
+          <div id="feedback"></div>
+        </div>
+      `;
+      createMapGeo('quiz-map', g.lat, g.lng, g.zoom);
+    }
+
+    window.answerGeoMapName = (btn) => {
+      if (answered) return;
+      answered = true; total++;
+      const answer = btn.dataset.answer;
+      const correct = btn.dataset.correct;
+      if (answer === correct) score++;
+      document.querySelectorAll('#quiz-opts .quiz-opt').forEach(b => {
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else if (b === btn && answer !== correct) b.classList.add('wrong');
+      });
+      const fb = document.getElementById('feedback');
+      fb.innerHTML = answer === correct
+        ? '<div class="feedback correct-fb">✅ Correct !</div>'
+        : `<div class="feedback wrong-fb">❌ C\\'était ${correct}</div>`;
+      fb.innerHTML += '<button class="next-btn" onclick="nextQuiz()">Suivant →</button>';
+    };
+
+    // --- GEO NOM → DÉTAIL ---
+    function renderGeoNameDetail(el) {
+      destroyMap();
+      if (shuffled.length === 0) { el.innerHTML = '<div class="card"><p>Aucun élément.</p></div>'; return; }
+      if (idx >= shuffled.length) { renderEnd(el); return; }
+      const g = shuffled[idx];
+      const pool = currentFilter === 'all' ? ALL_GEO : ALL_GEO.filter(x => x.type === g.type);
+      const distractors = pickDistractors(g, pool);
+      const options = shuffle([g, ...distractors]);
+      el.innerHTML = `
+        <div class="score-bar">✅ ${score} / ${total} <div class="progress-bar"><div class="progress-fill" style="width:${total ? Math.round(score / total * 100) : 0}%"></div></div> ${total ? Math.round(score / total * 100) : 0}%</div>
+        <div class="card">
+          <div style="font-size:1.1rem;color:#818cf8;margin-bottom:6px">${geoTypeLabel(g.type)}</div>
+          <div class="question-text">${g.name}</div>
+          <div class="question-sub">${geoDetailLabel(g.type)} ?</div>
+          <div class="quiz-options" id="quiz-opts">
+            ${options.map(o => `<button class="quiz-opt" data-answer="${o.detail}" data-correct="${g.detail}" onclick="answerGeoDetail(this)">${o.detail}</button>`).join('')}
+          </div>
+          <div id="feedback"></div>
+        </div>
+      `;
+    }
+
+    window.answerGeoDetail = (btn) => {
+      if (answered) return;
+      answered = true; total++;
+      const answer = btn.dataset.answer;
+      const correct = btn.dataset.correct;
+      if (answer === correct) score++;
+      document.querySelectorAll('#quiz-opts .quiz-opt').forEach(b => {
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else if (b === btn && answer !== correct) b.classList.add('wrong');
+      });
+      const fb = document.getElementById('feedback');
+      fb.innerHTML = answer === correct
+        ? '<div class="feedback correct-fb">✅ Correct !</div>'
+        : `<div class="feedback wrong-fb">❌ C\\'était ${correct}</div>`;
+      fb.innerHTML += '<button class="next-btn" onclick="nextQuiz()">Suivant →</button>';
+    };
+
+    // --- END SCREEN ---
+    function renderEnd(el) {
+      const pct = total > 0 ? Math.round(score / total * 100) : 0;
+      let emoji = pct >= 90 ? '🏆' : pct >= 70 ? '🎉' : pct >= 50 ? '👍' : '💪';
+      let msg = pct >= 90 ? 'Excellent !' : pct >= 70 ? 'Bien joué !' : pct >= 50 ? 'Pas mal !' : 'Continue à t\'entraîner !';
+      el.innerHTML = `
+        <div class="card end-screen">
+          <div style="font-size:3rem;margin-bottom:12px">${emoji}</div>
+          <div class="end-score">${pct}%</div>
+          <div class="end-label">${score} / ${total} — ${msg}</div>
+          <button class="restart-btn" onclick="resetAndRender()">🔄 Recommencer</button>
+        </div>
+      `;
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+
+</html>
