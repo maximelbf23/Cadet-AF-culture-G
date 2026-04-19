@@ -35,79 +35,214 @@ st.set_page_config(
 # ============================================================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap');
 
 :root {
-  --ink-900: oklch(14% 0.035 260);
-  --ink-800: oklch(19% 0.045 260);
-  --ink-700: oklch(24% 0.055 260);
-  --ink-600: oklch(34% 0.05 260);
-  --ink-500: oklch(46% 0.04 260);
-  --ink-400: oklch(62% 0.025 260);
-  --ink-300: oklch(78% 0.015 260);
-  --ink-200: oklch(90% 0.01 80);
-  --ink-100: oklch(95% 0.008 80);
-  --ink-50:  oklch(97.5% 0.006 80);
+  --ink-900: #0f1117;
+  --ink-800: #1c1f2e;
+  --ink-700: #2a2d3e;
+  --ink-600: #3d4258;
+  --ink-500: #5c6278;
+  --ink-400: #8b91a8;
+  --ink-300: #b8bccc;
+  --ink-200: #e0e2ea;
+  --ink-100: #f0f1f5;
+  --ink-50:  #f7f8fb;
 
-  --amber:        oklch(74% 0.14 72);
-  --amber-soft:   oklch(88% 0.07 75);
-  --amber-deep:   oklch(58% 0.12 55);
-  --copper:       oklch(56% 0.11 48);
+  --amber:       #c8913a;
+  --amber-soft:  #fef6ea;
+  --amber-deep:  #9c6e2a;
+  --amber-glow:  rgba(200,145,58,0.18);
 
-  --ok:        oklch(62% 0.12 160);
-  --ok-soft:   oklch(94% 0.04 160);
-  --err:       oklch(58% 0.17 25);
-  --err-soft:  oklch(94% 0.04 25);
+  --ok:       #1f9e6b;
+  --ok-soft:  #edf9f4;
+  --err:      #d03a2e;
+  --err-soft: #fef1f0;
 
   --bg:        var(--ink-50);
   --paper:     #ffffff;
-  --rule:      oklch(88% 0.012 260);
-  --rule-soft: oklch(93% 0.008 260);
+  --rule:      var(--ink-200);
+  --rule-soft: var(--ink-100);
   --text:      var(--ink-900);
   --text-dim:  var(--ink-500);
   --text-mute: var(--ink-400);
 
-  --serif: "Newsreader", "Cormorant Garamond", Georgia, serif;
-  --sans:  "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
-  --mono:  "Geist Mono", "JetBrains Mono", monospace;
+  --serif: "Newsreader", Georgia, serif;
+  --sans:  "Geist", -apple-system, sans-serif;
+  --mono:  "Geist Mono", monospace;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --shadow-xs: 0 1px 2px rgba(14,22,40,0.04);
-  --shadow-sm: 0 2px 10px -2px rgba(14,22,40,0.06), 0 1px 3px rgba(14,22,40,0.04);
-  --shadow-md: 0 18px 40px -18px rgba(14,22,40,0.18), 0 2px 6px rgba(14,22,40,0.04);
+  --shadow-xs: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 12px 32px rgba(0,0,0,0.11), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-focus: 0 0 0 3px var(--amber-glow);
 }
 
-/* ── Base App ── */
-.stApp {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-}
+/* ── Base ── */
+.stApp { font-family: var(--sans); background: var(--bg); color: var(--text); }
 .stApp > header { background: transparent !important; }
-.block-container { padding-top: 2rem; max-width: 940px; }
+.block-container { padding-top: 2rem !important; max-width: 920px !important; }
 
-/* ── Sidebar ── */
+/* ── Sidebar shell ── */
 [data-testid="stSidebar"] {
     background: var(--paper) !important;
-    border-right: 1px solid var(--rule);
+    border-right: 1px solid var(--rule) !important;
 }
-[data-testid="stSidebar"] * {
-    color: var(--text-dim) !important;
-    font-family: var(--sans);
-}
+[data-testid="stSidebar"] * { font-family: var(--sans); }
 [data-testid="stSidebar"] hr { border-color: var(--rule-soft) !important; }
-[data-testid="stSidebar"] .stRadio label {
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
-    padding: 0.45rem 0.9rem;
-    border-radius: 999px;
-    transition: background 0.15s, color 0.15s;
-    margin: 2px 0;
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR NAVIGATION — transform radio → clean pill nav
+   ══════════════════════════════════════════════════════════════ */
+
+/* Hide the "nav" widget label */
+[data-testid="stSidebar"] .stRadio [data-testid="stWidgetLabel"] {
+    display: none !important;
 }
+
+/* Flex column with small gap */
+[data-testid="stSidebar"] .stRadio > div > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+/* Each nav item label */
+[data-testid="stSidebar"] .stRadio label {
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px 14px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+    transition: background 0.15s, color 0.15s !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--text-dim) !important;
+    width: 100% !important;
+    line-height: 1.4 !important;
+}
+
+/* ✦ Kill the ugly radio circle in sidebar ONLY ✦ */
+[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child {
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: none !important;
+    overflow: hidden !important;
+    display: block !important;
+}
+
+/* Hover */
 [data-testid="stSidebar"] .stRadio label:hover {
+    background: var(--ink-100) !important;
     color: var(--text) !important;
-    background: oklch(88% 0.07 75 / 25%);
+}
+
+/* Active / selected page */
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    background: var(--amber-soft) !important;
+    color: var(--amber-deep) !important;
+    font-weight: 600 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   QCM ANSWER CARDS — radio options styled as beautiful cards
+   (applies to all radios NOT in sidebar)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Card wrapper — the BaseWeb radio component */
+[data-baseweb="radio"] {
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 12px;
+    padding: 14px 18px;
+    gap: 14px;
+    align-items: center;
+    cursor: pointer;
+    transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease), background 0.18s;
+    box-shadow: var(--shadow-xs);
+    width: 100%;
+}
+
+/* Hover on answer card */
+[data-baseweb="radio"]:hover {
+    border-color: var(--amber);
+    box-shadow: var(--shadow-focus);
+    background: var(--amber-soft);
+}
+
+/* Selected answer card */
+label:has(input:checked) [data-baseweb="radio"] {
+    border-color: var(--amber);
+    background: var(--amber-soft);
+    box-shadow: var(--shadow-focus);
+}
+
+/* The circle indicator — style as a clean dot */
+[data-baseweb="radio"] > div:first-child {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    border-radius: 50% !important;
+    border: 2px solid var(--rule) !important;
+    background: transparent !important;
+    transition: all 0.15s !important;
+    flex-shrink: 0 !important;
+}
+
+/* Checked indicator dot */
+label:has(input:checked) [data-baseweb="radio"] > div:first-child {
+    border-color: var(--amber-deep) !important;
+    background: var(--amber-deep) !important;
+    box-shadow: 0 0 0 3px var(--amber-glow) !important;
+}
+
+/* Answer text inside card */
+[data-baseweb="radio"] span {
+    font-family: var(--sans) !important;
+    font-size: 15px !important;
+    color: var(--text) !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+}
+
+label:has(input:checked) [data-baseweb="radio"] span {
+    color: var(--amber-deep) !important;
+}
+
+/* Each option label wrapper (spacing) */
+.stRadio > div > div > label {
+    display: block !important;
+    margin: 5px 0 !important;
+    padding: 0 !important;
+}
+
+/* Override: sidebar circle already killed above, re-override card styles */
+[data-testid="stSidebar"] [data-baseweb="radio"] {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    gap: 0 !important;
+}
+[data-testid="stSidebar"] [data-baseweb="radio"]:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+[data-testid="stSidebar"] label:has(input:checked) [data-baseweb="radio"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+[data-testid="stSidebar"] .stRadio > div > div > label {
+    margin: 1px 0 !important;
 }
 
 /* ── Headings ── */
@@ -134,12 +269,7 @@ em { font-style: italic; color: var(--amber-deep); }
     gap: 10px;
     margin-bottom: 18px;
 }
-.eyebrow::before {
-    content: "";
-    width: 22px;
-    height: 1px;
-    background: var(--text-mute);
-}
+.eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--text-mute); }
 
 .section-label {
     font-family: var(--mono);
@@ -153,12 +283,7 @@ em { font-style: italic; color: var(--amber-deep); }
     align-items: center;
     gap: 12px;
 }
-.section-label::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--rule);
-}
+.section-label::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
 
 /* ── Hero section ── */
 .hero-section {
@@ -186,7 +311,7 @@ em { font-style: italic; color: var(--amber-deep); }
 }
 .hero-divider { display: none; }
 
-/* ── Stats strip (4-col on Accueil) ── */
+/* ── Stats strip ── */
 .stats-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -194,18 +319,21 @@ em { font-style: italic; color: var(--amber-deep); }
     margin-bottom: 48px;
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
 }
 .stat-cell {
     padding: 22px 24px;
     text-align: center;
     border-right: 1px solid var(--rule);
+    background: var(--paper);
 }
 .stat-cell:last-child { border-right: none; }
 .stat-cell .sc-num {
     font-family: var(--serif);
     font-size: 32px;
     line-height: 1;
-    font-weight: 400;
     color: var(--text);
     margin-bottom: 6px;
     font-variant-numeric: tabular-nums;
@@ -218,24 +346,27 @@ em { font-style: italic; color: var(--amber-deep); }
     color: var(--text-mute);
 }
 
-/* ── Stat grid (3-col for flashcards header) ── */
+/* ── Stat grid (flashcards) ── */
 .stat-grid {
     display: grid;
     gap: 0;
     margin-bottom: 2rem;
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
 }
 .stat-card {
     padding: 1.4rem 1.5rem;
     text-align: center;
     border-right: 1px solid var(--rule);
+    background: var(--paper);
 }
 .stat-card:last-child { border-right: none; }
 .stat-value {
     font-family: var(--serif);
     font-size: 30px;
-    font-weight: 400;
     color: var(--text);
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -249,7 +380,7 @@ em { font-style: italic; color: var(--amber-deep); }
     color: var(--text-mute);
 }
 
-/* ── Score result display ── */
+/* ── Score display ── */
 .score-big {
     font-family: var(--serif);
     font-size: clamp(64px, 12vw, 104px);
@@ -261,9 +392,9 @@ em { font-style: italic; color: var(--amber-deep); }
     font-variant-numeric: tabular-nums;
     display: block;
 }
-.score-green { color: var(--ok); }
+.score-green  { color: var(--ok); }
 .score-yellow { color: var(--amber-deep); }
-.score-red { color: var(--err); }
+.score-red    { color: var(--err); }
 .score-caption {
     text-align: center;
     font-family: var(--mono);
@@ -274,14 +405,13 @@ em { font-style: italic; color: var(--amber-deep); }
     margin-bottom: 2.5rem;
 }
 
-/* ── Empty state card ── */
+/* ── Glass card (empty state) ── */
 .glass-card {
     background: var(--paper);
     border: 1px solid var(--rule);
-    border-radius: 2px;
+    border-radius: 12px;
     box-shadow: var(--shadow-sm);
 }
-.glass-card > span { color: var(--text-dim) !important; font-family: var(--sans) !important; }
 
 /* ── Question card ── */
 .question-card {
@@ -312,77 +442,95 @@ em { font-style: italic; color: var(--amber-deep); }
 
 /* ── Buttons ── */
 .stButton > button {
-    background: transparent !important;
-    border: 1px solid var(--rule) !important;
+    background: var(--paper) !important;
+    border: 1.5px solid var(--rule) !important;
     color: var(--text) !important;
-    border-radius: 2px !important;
-    font-family: var(--sans);
+    border-radius: 10px !important;
+    font-family: var(--sans) !important;
     font-size: 15px !important;
     font-weight: 500 !important;
-    padding: 16px 22px !important;
-    transition: background 0.2s var(--ease), border-color 0.2s var(--ease) !important;
+    padding: 13px 22px !important;
+    transition: all 0.18s var(--ease) !important;
     width: 100%;
+    box-shadow: var(--shadow-xs) !important;
 }
 .stButton > button:hover {
-    background: oklch(88% 0.07 75 / 20%) !important;
-    border-color: var(--amber) !important;
-    box-shadow: none !important;
+    background: var(--ink-100) !important;
+    border-color: var(--ink-300) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transform: translateY(-1px) !important;
+}
+.stButton > button:focus-visible {
+    outline: none !important;
+    box-shadow: var(--shadow-focus) !important;
 }
 .stButton > button[kind="primary"] {
     background: var(--ink-900) !important;
-    color: oklch(97.5% 0.006 80) !important;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 13px !important;
-    box-shadow: var(--shadow-sm) !important;
+    color: #fff !important;
     border: none !important;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 .stButton > button[kind="primary"]:hover {
     background: var(--ink-700) !important;
-    transform: translateY(-1px);
+    transform: translateY(-2px) !important;
     box-shadow: var(--shadow-md) !important;
 }
 
-/* ── Answers feedback ── */
+/* ── Answer feedback cards ── */
 .correct-answer {
-    background: var(--ok-soft) !important;
-    border: 1px solid var(--ok) !important;
-    border-left: 3px solid var(--ok) !important;
-    border-radius: 2px;
-    padding: 1rem 1.4rem;
+    background: var(--ok-soft);
+    border: 1.5px solid var(--ok);
+    border-left: 4px solid var(--ok);
+    border-radius: 10px;
+    padding: 14px 18px;
     color: var(--ok);
-    font-weight: 500;
+    font-weight: 600;
     font-family: var(--sans);
-    margin: 0.4rem 0;
+    font-size: 15px;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 .wrong-answer {
-    background: var(--err-soft) !important;
-    border: 1px solid var(--err) !important;
-    border-left: 3px solid var(--err) !important;
-    border-radius: 2px;
-    padding: 1rem 1.4rem;
+    background: var(--err-soft);
+    border: 1.5px solid var(--err);
+    border-left: 4px solid var(--err);
+    border-radius: 10px;
+    padding: 14px 18px;
     color: var(--err);
-    font-weight: 500;
+    font-weight: 600;
     font-family: var(--sans);
-    margin: 0.4rem 0;
+    font-size: 15px;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 .neutral-answer {
     background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: 2px;
-    padding: 1rem 1.4rem;
+    border: 1.5px solid var(--rule);
+    border-radius: 10px;
+    padding: 14px 18px;
     color: var(--text-dim);
-    margin: 0.4rem 0;
+    font-family: var(--sans);
+    font-size: 15px;
+    margin: 5px 0;
 }
 
 /* ── Flashcard ── */
 .flashcard {
     background: var(--paper);
     border: 1px solid var(--rule);
-    border-radius: 2px;
+    border-radius: 16px;
     padding: 4rem 3rem;
     text-align: center;
-    min-height: 250px;
+    min-height: 260px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -390,7 +538,6 @@ em { font-style: italic; color: var(--amber-deep); }
     margin: 2rem auto;
     max-width: 600px;
 }
-.flashcard::before, .flashcard::after { display: none !important; }
 .flashcard-front {
     font-family: var(--serif);
     font-size: 28px;
@@ -407,33 +554,37 @@ em { font-style: italic; color: var(--amber-deep); }
 }
 
 /* ── Progress bar ── */
-.stProgress > div > div { background: var(--amber-deep) !important; border-radius: 0; }
-.stProgress > div { background: var(--rule) !important; border-radius: 0; height: 3px !important; }
+.stProgress > div > div { background: var(--amber-deep) !important; border-radius: 4px; }
+.stProgress > div { background: var(--rule) !important; border-radius: 4px; height: 4px !important; }
 
 /* ── Session history row ── */
 .session-row {
     background: var(--paper);
     border: 1px solid var(--rule);
-    border-radius: 2px;
+    border-radius: 10px;
     padding: 1rem 1.4rem;
-    margin: 0.4rem 0;
+    margin: 5px 0;
     font-family: var(--sans);
     font-size: 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow 0.15s;
 }
+.session-row:hover { box-shadow: var(--shadow-sm); }
 .session-row b { font-family: var(--serif); font-size: 17px; color: var(--text); }
 
 /* ── Form Controls ── */
 .stSelectbox > div > div {
-    background: transparent !important;
+    background: var(--paper) !important;
     border-color: var(--rule) !important;
-    border-radius: 2px !important;
+    border-radius: 10px !important;
     font-family: var(--sans) !important;
     font-size: 15px !important;
     color: var(--text) !important;
+    box-shadow: var(--shadow-xs) !important;
 }
 [data-testid="stWidgetLabel"] {
     font-family: var(--mono) !important;
@@ -442,7 +593,19 @@ em { font-style: italic; color: var(--amber-deep); }
     text-transform: uppercase !important;
     color: var(--text-mute) !important;
 }
-.stCheckbox, .stRadio { color: var(--text) !important; font-family: var(--sans) !important; }
+
+/* ── Checkbox ── */
+.stCheckbox label {
+    font-family: var(--sans) !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    color: var(--text-dim) !important;
+}
+.stCheckbox [data-baseweb="checkbox"] > div:first-child {
+    border-radius: 5px !important;
+    border-color: var(--rule) !important;
+    transition: all 0.15s !important;
+}
 
 /* ── Metrics ── */
 [data-testid="stMetricValue"] {
@@ -459,13 +622,18 @@ em { font-style: italic; color: var(--amber-deep); }
     font-size: 10px !important;
 }
 
-/* ── Info/alert override ── */
-.stAlert { border-radius: 2px !important; border-left-width: 2px !important; font-family: var(--sans) !important; }
+/* ── Alert ── */
+.stAlert { border-radius: 10px !important; font-family: var(--sans) !important; }
 
 /* ── Dataframe ── */
-[data-testid="stDataFrame"] { border: 1px solid var(--rule) !important; border-radius: 2px !important; }
-</style>
+[data-testid="stDataFrame"] { border: 1px solid var(--rule) !important; border-radius: 10px !important; }
 
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
+</style>
 """, unsafe_allow_html=True)
 
 
@@ -835,6 +1003,7 @@ def render_qcm_question():
     total = len(questions)
     timer_s = st.session_state.get("qcm_timer", 0)
     answered = st.session_state.qcm_answered
+    radio_key = f"qcm_radio_{idx}"
 
     # Timer logic — compute remaining before rendering
     remaining = None
@@ -842,9 +1011,19 @@ def render_qcm_question():
         elapsed = time.time() - st.session_state.qcm_q_start
         remaining = max(0, timer_s - int(elapsed))
         if remaining == 0:
+            # Auto-submit whatever is selected (or None)
+            selected_label = st.session_state.get(radio_key)
+            if selected_label:
+                selected_id = selected_label[0].lower()
+                is_correct = selected_id == q["answer"]
+                if is_correct:
+                    st.session_state.qcm_score += 1
+            else:
+                selected_id = None
+                is_correct = False
             st.session_state.qcm_answers.append({
-                "question_id": q["id"], "selected": None,
-                "correct": False, "time_ms": int(elapsed * 1000),
+                "question_id": q["id"], "selected": selected_id,
+                "correct": is_correct, "time_ms": int(elapsed * 1000),
             })
             st.session_state.qcm_idx += 1
             st.session_state.qcm_answered = False
@@ -865,11 +1044,14 @@ def render_qcm_question():
     with col1:
         st.progress(progress, text=f"Question {idx + 1} / {total}")
     with col2:
-        st.markdown(f"<div style='text-align:right;font-size:1.1rem;font-weight:700;color:var(--text);padding-top:0.3rem'>"
-                    f"Score: {st.session_state.qcm_score}</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div style='text-align:right;font-size:1.1rem;font-weight:700;"
+            f"color:var(--text);padding-top:0.3rem'>Score : {st.session_state.qcm_score}</div>",
+            unsafe_allow_html=True,
+        )
     if col3 is not None and remaining is not None:
         with col3:
-            color = "#f87171" if remaining <= 5 else "#fbbf24" if remaining <= 10 else "#48bb78"
+            color = "var(--err)" if remaining <= 5 else "var(--amber)" if remaining <= 10 else "var(--ok)"
             st.markdown(
                 f"<div style='text-align:right;font-size:1.4rem;font-weight:800;"
                 f"color:{color};padding-top:0.1rem'>⏱ {remaining}s</div>",
@@ -879,29 +1061,44 @@ def render_qcm_question():
     # Category + Question
     cat = q.get("category", "Général")
     st.markdown(f'<span class="cat-badge">{cat}</span>', unsafe_allow_html=True)
-    st.markdown(f'<div class="question-card"><div class="question-text">{q["question"]}</div></div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="question-card"><div class="question-text">{q["question"]}</div></div>',
+        unsafe_allow_html=True,
+    )
 
     selected = st.session_state.qcm_selected
     correct_letter = q["answer"]
 
     if not answered:
-        cols = st.columns(2)
-        for i, opt in enumerate(q["options"]):
-            with cols[i % 2]:
-                if st.button(f"**{opt['id'].upper()}** — {opt['text']}", key=f"opt_{idx}_{opt['id']}",
-                             use_container_width=True):
-                    elapsed = time.time() - st.session_state.qcm_q_start
-                    is_correct = opt["id"] == correct_letter
-                    if is_correct:
-                        st.session_state.qcm_score += 1
-                    st.session_state.qcm_answered = True
-                    st.session_state.qcm_selected = opt["id"]
-                    st.session_state.qcm_answers.append({
-                        "question_id": q["id"], "selected": opt["id"],
-                        "correct": is_correct, "time_ms": int(elapsed * 1000),
-                    })
-                    st.rerun()
+        # Answer options as beautiful radio cards
+        option_labels = [f"{opt['id'].upper()} · {opt['text']}" for opt in q["options"]]
+        chosen = st.radio(
+            "Votre réponse",
+            option_labels,
+            key=radio_key,
+            label_visibility="collapsed",
+            index=None,
+        )
+
+        st.markdown("")
+        if st.button(
+            "Valider ma réponse →",
+            type="primary",
+            use_container_width=True,
+            disabled=chosen is None,
+        ):
+            elapsed = time.time() - st.session_state.qcm_q_start
+            selected_id = chosen[0].lower()
+            is_correct = selected_id == correct_letter
+            if is_correct:
+                st.session_state.qcm_score += 1
+            st.session_state.qcm_answered = True
+            st.session_state.qcm_selected = selected_id
+            st.session_state.qcm_answers.append({
+                "question_id": q["id"], "selected": selected_id,
+                "correct": is_correct, "time_ms": int(elapsed * 1000),
+            })
+            st.rerun()
 
         # Tick every second while timer is running
         if timer_s > 0:
@@ -911,21 +1108,19 @@ def render_qcm_question():
         for opt in q["options"]:
             is_correct_opt = opt["id"] == correct_letter
             is_selected = opt["id"] == selected
+            label = f"{opt['id'].upper()} · {opt['text']}"
             if is_correct_opt:
-                st.markdown(f'<div class="correct-answer">✅ <b>{opt["id"].upper()}</b> — {opt["text"]}</div>',
-                            unsafe_allow_html=True)
+                st.markdown(f'<div class="correct-answer">✅ {label}</div>', unsafe_allow_html=True)
             elif is_selected:
-                st.markdown(f'<div class="wrong-answer">❌ <b>{opt["id"].upper()}</b> — {opt["text"]}</div>',
-                            unsafe_allow_html=True)
+                st.markdown(f'<div class="wrong-answer">❌ {label}</div>', unsafe_allow_html=True)
             else:
-                st.markdown(f'<div class="neutral-answer"><b>{opt["id"].upper()}</b> — {opt["text"]}</div>',
-                            unsafe_allow_html=True)
+                st.markdown(f'<div class="neutral-answer">{label}</div>', unsafe_allow_html=True)
 
         if q.get("explanation"):
             st.info(f"💡 {q['explanation']}")
 
         st.markdown("")
-        if st.button("Suivant ➔", type="primary", use_container_width=True):
+        if st.button("Suivant →", type="primary", use_container_width=True):
             st.session_state.qcm_idx += 1
             st.session_state.qcm_answered = False
             st.session_state.qcm_selected = None
