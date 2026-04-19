@@ -420,11 +420,6 @@ hr { border-color: rgba(255,255,255,0.04) !important; }
 # DATA
 # ============================================================
 @st.cache_data
-def load_questions():
-    with open(DATA_PATH, 'r', encoding='utf-8') as f:
-        return json.load(f)['qcm'], json.load(open(DATA_PATH, 'r', encoding='utf-8'))['flashcards']
-
-@st.cache_data
 def load_questions_safe():
     with open(DATA_PATH, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -454,11 +449,27 @@ def save_user_data(data):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def get_all_profiles():
+    data_dir = os.path.join(BASE_DIR, "data")
+    profiles = []
+    if os.path.exists(data_dir):
+        for fname in sorted(os.listdir(data_dir)):
+            if fname.startswith("user_data_") and fname.endswith(".json"):
+                safe_name = fname[len("user_data_"):-len(".json")]
+                display = safe_name.replace("_", " ").title()
+                profiles.append(display)
+    return profiles if profiles else ["Maxime"]
+
+@st.cache_data
+def build_q_map():
+    qcm_data, _ = load_questions_safe()
+    return {q["id"]: q for q in qcm_data}
+
 
 # ============================================================
 # SIDEBAR
 # ============================================================
-def render_sidebar():
+def render_sidebar(qcm_data, fc_data):
     with st.sidebar:
         st.markdown(
             '<div style="text-align:center;padding:1.5rem 0 0.5rem;">'
@@ -485,14 +496,28 @@ def render_sidebar():
         
         if "current_profile" not in st.session_state:
             st.session_state.current_profile = "Maxime"
-            
-        profils = ["Maxime", "Ami(e)"]
+
+        all_profiles = get_all_profiles()
+        if st.session_state.current_profile not in all_profiles:
+            all_profiles.insert(0, st.session_state.current_profile)
+
         profil_actuel = st.selectbox(
-            "👤 Profil actuel", profils, 
-            index=profils.index(st.session_state.current_profile) if st.session_state.current_profile in profils else 0
+            "👤 Profil", all_profiles,
+            index=all_profiles.index(st.session_state.current_profile),
         )
         if profil_actuel != st.session_state.current_profile:
             st.session_state.current_profile = profil_actuel
+            st.rerun()
+
+        new_name = st.text_input("✏️ Nouveau profil", placeholder="Prénom...",
+                                 label_visibility="collapsed", key="new_profile_input")
+        if st.button("+ Créer profil", use_container_width=True) and new_name.strip():
+            name = new_name.strip().title()
+            path = get_user_data_path(name)
+            if not os.path.exists(path):
+                with open(path, 'w', encoding='utf-8') as _f:
+                    json.dump({"sessions": [], "flashcard_mastery": {}}, _f)
+            st.session_state.current_profile = name
             st.rerun()
 
         st.markdown("---")
@@ -511,8 +536,8 @@ def render_sidebar():
             )
         
         st.markdown(
-            "<div style='position:fixed;bottom:1rem;left:1rem;opacity:0.2;font-size:0.65rem;letter-spacing:0.05em;'>"
-            "v4.0 · 3022 QCM · 2742 FC</div>", unsafe_allow_html=True)
+            f"<div style='position:fixed;bottom:1rem;left:1rem;opacity:0.2;font-size:0.65rem;letter-spacing:0.05em;'>"
+            f"v4.0 · {len(qcm_data)} QCM · {len(fc_data)} FC</div>", unsafe_allow_html=True)
     
     return page
 
@@ -665,34 +690,66 @@ def render_qcm_setup(qcm_data):
 def render_qcm_question():
     questions = st.session_state.qcm_questions
     idx = st.session_state.qcm_idx
-    
+
     if idx >= len(questions):
         finish_qcm()
         st.rerun()
         return
-    
+
     q = questions[idx]
     total = len(questions)
+    timer_s = st.session_state.get("qcm_timer", 0)
+    answered = st.session_state.qcm_answered
+
+    # Timer logic — compute remaining before rendering
+    remaining = None
+    if timer_s > 0 and not answered:
+        elapsed = time.time() - st.session_state.qcm_q_start
+        remaining = max(0, timer_s - int(elapsed))
+        if remaining == 0:
+            st.session_state.qcm_answers.append({
+                "question_id": q["id"], "selected": None,
+                "correct": False, "time_ms": int(elapsed * 1000),
+            })
+            st.session_state.qcm_idx += 1
+            st.session_state.qcm_answered = False
+            st.session_state.qcm_selected = None
+            st.session_state.qcm_q_start = time.time()
+            st.rerun()
+            return
+
     progress = idx / total
-    
+
     # Header
-    col1, col2 = st.columns([3, 1])
+    if timer_s > 0:
+        col1, col2, col3 = st.columns([4, 1, 1])
+    else:
+        col1, col2 = st.columns([3, 1])
+        col3 = None
+
     with col1:
         st.progress(progress, text=f"Question {idx + 1} / {total}")
     with col2:
         st.markdown(f"<div style='text-align:right;font-size:1.1rem;font-weight:700;color:#a78bfa;padding-top:0.3rem'>"
                     f"Score: {st.session_state.qcm_score}</div>", unsafe_allow_html=True)
-    
+    if col3 is not None and remaining is not None:
+        with col3:
+            color = "#f87171" if remaining <= 5 else "#fbbf24" if remaining <= 10 else "#48bb78"
+            st.markdown(
+                f"<div style='text-align:right;font-size:1.4rem;font-weight:800;"
+                f"color:{color};padding-top:0.1rem'>⏱ {remaining}s</div>",
+                unsafe_allow_html=True,
+            )
+
     # Category + Question
     cat = q.get("category", "Général")
     st.markdown(f'<span class="cat-badge">{cat}</span>', unsafe_allow_html=True)
     st.markdown(f'<div class="question-card"><div class="question-text">{q["question"]}</div></div>',
                 unsafe_allow_html=True)
-    
-    answered = st.session_state.qcm_answered
+
     selected = st.session_state.qcm_selected
     correct_letter = q["answer"]
-    
+
     if not answered:
         cols = st.columns(2)
         for i, opt in enumerate(q["options"]):
@@ -710,6 +767,11 @@ def render_qcm_question():
                         "correct": is_correct, "time_ms": int(elapsed * 1000),
                     })
                     st.rerun()
+
+        # Tick every second while timer is running
+        if timer_s > 0:
+            time.sleep(1)
+            st.rerun()
     else:
         for opt in q["options"]:
             is_correct_opt = opt["id"] == correct_letter
@@ -723,10 +785,10 @@ def render_qcm_question():
             else:
                 st.markdown(f'<div class="neutral-answer"><b>{opt["id"].upper()}</b> — {opt["text"]}</div>',
                             unsafe_allow_html=True)
-        
+
         if q.get("explanation"):
             st.info(f"💡 {q['explanation']}")
-        
+
         st.markdown("")
         if st.button("Suivant ➔", type="primary", use_container_width=True):
             st.session_state.qcm_idx += 1
@@ -765,8 +827,7 @@ def render_qcm_summary():
                 unsafe_allow_html=True)
     
     # Category breakdown
-    qcm_data, _ = load_questions_safe()
-    q_map = {q["id"]: q for q in qcm_data}
+    q_map = build_q_map()
     cat_stats = {}
     for a in s.get("answers", []):
         q = q_map.get(a["question_id"], {})
@@ -785,7 +846,7 @@ def render_qcm_summary():
     wrong = [a for a in s.get("answers", []) if not a["correct"]]
     if wrong:
         st.markdown("#### ❌ À revoir")
-        for a in wrong[:15]:
+        for a in wrong:
             q = q_map.get(a["question_id"], {})
             correct_text = next((o["text"] for o in q.get("options", []) if o["id"] == q.get("answer")), "?")
             with st.expander(f'{q.get("question", "?")[:80]}'):
@@ -964,9 +1025,9 @@ def page_analytics():
                     unsafe_allow_html=True)
         return
     
-    qcm_data, fc_data = load_questions_safe()
-    q_map = {q["id"]: q for q in qcm_data}
-    
+    _, fc_data = load_questions_safe()
+    q_map = build_q_map()
+
     plot_layout = dict(
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
@@ -1117,7 +1178,7 @@ def page_analytics():
 # ============================================================
 def main():
     qcm_data, fc_data = load_questions_safe()
-    page = render_sidebar()
+    page = render_sidebar(qcm_data, fc_data)
     
     if page == "🏠 Accueil": page_accueil(qcm_data, fc_data)
     elif page == "📝 QCM": page_qcm(qcm_data)
